@@ -50,6 +50,7 @@ namespace KingmakerTactics.Engine {
         }
 
         public static void Tick(float gameTimeSec) {
+            if (TurnBasedGate.IsActive()) return;
             bool inCombat = Game.Instance.Player.IsInCombat;
 
             // Combat-end transition: log + reset the foreign-command tracker. The legacy
