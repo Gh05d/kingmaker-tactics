@@ -80,6 +80,7 @@ namespace KingmakerTactics.Engine {
                 ActiveRuleTracker.Reset();
                 notExecutableWarn.Reset();
                 Log.Engine.Info("Combat started");
+                BuffBotCompat.LogOnce();
                 var partyNames = new List<string>();
                 foreach (var u in Game.Instance.Player.PartyAndPets()) {
                     partyNames.Add($"{u.CharacterName}({u.UniqueId}) inGame={u.IsInGame}");

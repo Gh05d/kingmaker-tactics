@@ -28,7 +28,7 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 - **Action types**: Cast Spell, Cast Ability, Use Item, Toggle Activatable, Attack, Heal (auto-picks best available heal across spells/scrolls/potions/wands), Do Nothing
 - **Target selectors**: Self, Ally with lowest HP, Enemy with highest AC / biggest threat / specific creature type, or the specific entity that matched the condition
 - **Ability variants supported** — Evil Eye – AC / Evil Eye – Attack / Channel Positive Energy – Damage Undead, etc., with full cast animations
-- **BubbleBuffs compatible** — Kingmaker Tactics handles in-combat reactions while BubbleBuffs handles pre-combat buffing. No conflicts.
+- **Buff Bot compatible** — Buff Bot handles your buff routines, Kingmaker Tactics handles in-combat reactions. If you enable Buff Bot's *cast buffs on combat start*, give your tactics buff rules a "missing buff" condition (or drop them), otherwise both mods cast the same buff and the slot is spent twice.
 - **Per-session debug logging** to its own file (`Mods/KingmakerTactics/Logs/kingmaker-tactics-YYYY-MM-DD-HHmmss.log`) with levels (Trace/Debug/Info/Warn/Error) and categories (Engine/UI/Persistence/Compat/Game)
 
 ## Installation

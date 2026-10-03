@@ -1016,27 +1016,20 @@ namespace KingmakerTactics.UI {
                 if (hudButton != null) { Destroy(hudButton); hudButton = null; }
                 hudButtonRetrySeconds = 0f;
             }
-            // Re-create only when the button was actually destroyed (BubbleBuffs rebuilds
-            // its root on area load and our child gets torn down with it; the hide-toggle
-            // branch above is the other path to null). DO NOT recreate on
+            // Re-create only when the button was actually destroyed (a canvas rebuild on
+            // area load tears our child down; the hide-toggle branch above is the other
+            // path to null). DO NOT recreate on
             // !activeInHierarchy: dialog scenes deactivate the HUD parent briefly, and the
             // per-frame destroy+reparent cycle leaves the button at a transient layout state
             // — observed mid-screen over dialog text. Unity's destroyed-object equality
-            // covers the BB-rebuild teardown case.
+            // covers the rebuild teardown case.
             else if (hudButton == null && Game.Instance?.UI?.Canvas != null) {
                 hudButtonRetrySeconds += Time.deltaTime;
                 var canvas = Game.Instance.UI.Canvas.transform;
-                // BubbleBuffs is the only container we can rely on as a parent: BB rebuilds
-                // its own GridLayoutGroup with explicit cell sizing, so dropping in our
-                // helmet adds a visible cell. The vanilla "NestedCanvas1/.../ButtonsPart/
-                // Container" looks identical structurally but its layout/sizing makes our
-                // child invisible (clipped, off-screen on Steam Deck — observed empirically).
-                // Without BB we use the floating fallback at a fixed safe screen position.
-                var bbContainer = canvas.Find("BUBBLEMODS_ROOT/IngameMenuView/ButtonsPart/Container");
-                if (bbContainer != null) {
-                    CreateButtonInGameContainer(bbContainer);
-                    hudButtonRetrySeconds = 0f;
-                } else if (hudButtonRetrySeconds > 5f) {
+                // Kingmaker has no BubbleBuffs (Wrath-only) and Buff Bot adds no HUD
+                // container, so the button always floats at a fixed safe screen position.
+                // The wait lets the HUD finish building before we resolve the helmet sprite.
+                if (hudButtonRetrySeconds > 5f) {
                     CreateFloatingHudButton(canvas);
                     hudButtonRetrySeconds = 0f;
                 }
@@ -1055,40 +1048,6 @@ namespace KingmakerTactics.UI {
                 (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) {
                 Toggle();
             }
-        }
-
-        // Parents a fresh helmet button into the GridLayoutGroup container that hosts the
-        // game's HUD buttons. Same code path for BubbleBuffs' rebuilt container and the
-        // vanilla NestedCanvas1 container — both have identical structure.
-        void CreateButtonInGameContainer(Transform container) {
-            if (hudButton != null) { Object.Destroy(hudButton); hudButton = null; }
-
-            Sprite helmetSprite = ResolveHudButtonSprite(Game.Instance.UI.Canvas.transform);
-
-            var btn = new GameObject("TacticsBtn", typeof(RectTransform));
-            btn.transform.SetParent(container, false);
-            btn.transform.localScale = Vector3.one;
-            hudButton = btn;
-
-            var btnImg = btn.AddComponent<Image>();
-            if (helmetSprite != null) {
-                btnImg.sprite = helmetSprite;
-                btnImg.preserveAspect = true;
-                btnImg.color = Color.white;
-            } else {
-                btnImg.color = Theme.BandFallbackMauve;
-            }
-            btnImg.raycastTarget = true;
-
-            var btnComp = btn.AddComponent<Button>();
-            btnComp.targetGraphic = btnImg;
-            WireHudButtonHover(btnComp, helmetSprite);
-            btnComp.onClick.AddListener(() => {
-                Log.UI.Debug("HUD button clicked");
-                Toggle();
-            });
-
-            Log.UI.Info($"HUD button created in {container.parent?.parent?.name ?? "?"} container");
         }
 
         void CreateFloatingHudButton(Transform canvas) {

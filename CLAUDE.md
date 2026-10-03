@@ -102,7 +102,8 @@ Main.OnUpdate() → TacticsEvaluator.Tick(gameTime)
 ## UI
 
 - **Keybind:** `Ctrl+T` toggles the Tactics panel, `ESC` closes it when open
-- **HUD button:** helmet-sprite button parented into the game's HUD `GridLayoutGroup` (BubbleBuffs container lookup kept from Wrath; Kingmaker container still to be confirmed on the deck); standalone fallback bottom-left `anchoredPosition (20,120)`, 48×48; created lazily once `Game.Instance.UI.Canvas` is available and re-created only if destroyed (BubbleBuffs rebuilds the container). Source: `UI/TacticsPanel.cs` ~1018-1107.
+- **HUD button:** floating helmet-sprite button, bottom-left `anchoredPosition (20,120)`, 48×48, created ~5 s after `Game.Instance.UI.Canvas` is available and re-created only if destroyed. Kingmaker has no BubbleBuffs container (Wrath-only mod); Buff Bot has no HUD. Source: `UI/TacticsPanel.cs` `CreateFloatingHudButton`.
+- **Buff Bot** (UMM Id `KingmakerBuffBot`): casts via `AbilityData.Cast` without UnitCommands, so `PlayerCommandGuard` never sees it and there is nothing to coordinate. `Compatibility/BuffBotCompat.cs` only logs detection + its `castCombatStart` setting on the first combat (double-spent slots if both cast the same buff at combat start).
 
 ## Topic Index
 
