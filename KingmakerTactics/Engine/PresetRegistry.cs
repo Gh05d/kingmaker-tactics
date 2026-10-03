@@ -42,11 +42,11 @@ namespace KingmakerTactics.Engine {
             // risk: a default the user deleted before the sentinel existed will re-seed once.
             var defaults = DefaultPresets.Build().ToDictionary(p => p.Id, p => p);
             var toWrite = DefaultSeeding.Plan(defaults.Keys, seeded, id => presets.ContainsKey(id));
-            foreach (var id in toWrite) {
-                PresetManager.Save(defaults[id]);
+            int newSeeds = DefaultSeeding.Write(toWrite, seeded, id => {
+                if (!PresetManager.Save(defaults[id])) return false;
                 presets[id] = defaults[id];
-            }
-            int newSeeds = toWrite.Count;
+                return true;
+            });
 
             try {
                 System.IO.Directory.CreateDirectory(presetDir);

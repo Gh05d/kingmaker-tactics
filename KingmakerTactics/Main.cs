@@ -128,6 +128,7 @@ namespace KingmakerTactics {
             public void OnAreaDidLoad() {
                 Persistence.ConfigManager.Reset();
                 Engine.TacticsEvaluator.Reset();
+                Engine.PlayerCommandGuard.Reset(); // drop command objects from before the load
                 Logging.Log.Game.Info("Area loaded — config and evaluator state reset");
             }
             public void OnAreaBeginUnloading() { }

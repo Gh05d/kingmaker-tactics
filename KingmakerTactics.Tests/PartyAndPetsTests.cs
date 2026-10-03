@@ -15,8 +15,8 @@ namespace KingmakerTactics.Tests {
             Assert.Equal(new[] { "a", "dog", "b" }, r.ConvertAll(u => u.N).ToArray());
         }
 
-        // Kingmaker's Player.Party may already list a pet whose master is in the party
-        // (Player.AddCharacterToLists checks Descriptor.IsPet + Master) — no duplicates.
+        // Kingmaker's Player.Party never lists pets (AddCharacterToLists, IL); the merge still
+        // must not duplicate one if a caller ever passes a list that does.
         [Fact]
         public void PetAlreadyInPartyIsNotDuplicated() {
             var dog = new U { N = "dog" };

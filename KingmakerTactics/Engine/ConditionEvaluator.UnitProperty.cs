@@ -177,7 +177,8 @@ namespace KingmakerTactics.Engine {
 
                 case ConditionProperty.IsPet: {
                     // Kingmaker has no UnitPartPet; UnitDescriptor.IsPet is true when the unit has a Master
-                    // (animal companions). Whether summons also get a Master is unverified (engine-verification.md §11).
+                    // (animal companions). Summons never get one: SetMaster is only called by AddPet,
+                    // MakePet, RespecCompanion and RemoveMaster (IL, whole-branch review 2026-10-03).
                     bool isPet = unit.Descriptor.IsPet;
                     return EqualsBool(isPet, condition);
                 }

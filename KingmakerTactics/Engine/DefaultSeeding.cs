@@ -21,5 +21,19 @@ namespace KingmakerTactics.Engine {
             }
             return write;
         }
+
+        /// <summary>
+        /// Writes the planned ids; a failed save is removed from <paramref name="seeded"/> again
+        /// so the next load retries it instead of treating it as a user deletion. Returns the
+        /// number written.
+        /// </summary>
+        public static int Write(IEnumerable<string> toWrite, ISet<string> seeded, Func<string, bool> save) {
+            int written = 0;
+            foreach (var id in toWrite) {
+                if (save(id)) written++;
+                else seeded.Remove(id);
+            }
+            return written;
+        }
     }
 }

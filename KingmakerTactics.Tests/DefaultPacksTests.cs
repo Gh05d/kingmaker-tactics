@@ -114,6 +114,17 @@ namespace KingmakerTactics.Tests {
             Assert.Equal(new[] { "b" }, write);
         }
 
+        // A failed write (disk full, permissions) must stay unmarked so the next load retries it.
+        [Fact]
+        public void Failed_write_is_retried_next_load() {
+            var seeded = new HashSet<string>();
+            var write = DefaultSeeding.Plan(new[] { "a", "b" }, seeded, id => false);
+            int written = DefaultSeeding.Write(write, seeded, id => id == "a");
+            Assert.Equal(1, written);
+            Assert.Contains("a", seeded);
+            Assert.DoesNotContain("b", seeded);
+        }
+
         // Upgrade from a pre-sentinel version: the file exists, so only mark it seeded.
         [Fact]
         public void Existing_files_are_marked_but_not_rewritten() {

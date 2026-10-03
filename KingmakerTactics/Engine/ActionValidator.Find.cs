@@ -14,7 +14,9 @@ namespace KingmakerTactics.Engine {
 
         /// <summary>
         /// Returns ability and whether it's synthetic (variant/not in owner's fact list).
-        /// Synthetic abilities must use Rulebook.Trigger — CreateCastCommand silently rejects them.
+        /// Synthetic = variant/conversion data built by AbilityConversions (not in the unit's
+        /// fact list). No caller branches on it any more: the executor casts conversions
+        /// through CreateCastCommand, the way Kingmaker's action bar does.
         ///
         /// Multi-spellbook units (e.g. Magus + Wizard) hold a separate copy
         /// of the same spell per book. The scan prefers the first copy that is castable RIGHT NOW

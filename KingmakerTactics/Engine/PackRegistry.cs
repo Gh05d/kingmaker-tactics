@@ -38,12 +38,15 @@ namespace KingmakerTactics.Engine {
                 }
                 var defaults = DefaultPacks.Build().ToDictionary(p => p.Id, p => p);
                 var toWrite = DefaultSeeding.Plan(defaults.Keys, seeded, id => packs.ContainsKey(id));
-                foreach (var id in toWrite) {
-                    if (PackManager.Save(defaults[id])) packs[id] = defaults[id];
-                }
+                int written = DefaultSeeding.Write(toWrite, seeded, id => {
+                    if (!PackManager.Save(defaults[id])) return false;
+                    packs[id] = defaults[id];
+                    return true;
+                });
                 System.IO.Directory.CreateDirectory(PackManager.PackDir);
                 System.IO.File.WriteAllLines(sentinelPath, seeded);
-                if (toWrite.Count > 0) Log.Persistence.Info($"Seeded {toWrite.Count} default pack(s)");
+                if (written > 0) Log.Persistence.Info($"Seeded {written} default pack(s)");
+                if (written < toWrite.Count) Log.Persistence.Warn($"{toWrite.Count - written} default pack(s) failed to save; retried next load");
             } catch (Exception ex) {
                 // User-surface persistence: a seeding failure must not break pack loading.
                 Log.Persistence.Error(ex, $"Default pack seeding failed (sentinel {sentinelPath})");

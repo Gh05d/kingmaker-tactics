@@ -23,7 +23,8 @@ namespace KingmakerTactics.Compatibility {
             commands.Contains(c) || (commands.Queue != null && commands.Queue.Contains(c));
 
         // Wrath's Player.PartyAndPets. Kingmaker has at most one pet per unit (UnitDescriptor.Pet);
-        // Player.Party may already contain pets (AddCharacterToLists), so duplicates are skipped.
+        // Player.AddCharacterToLists never puts a pet into m_Party (IL), so Party is pet-free;
+        // the duplicate skip is defensive only.
         public static List<UnitEntityData> PartyAndPets(this Player p) =>
             MergePartyAndPets(p.Party, u => u.Descriptor.Pet);
 

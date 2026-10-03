@@ -2,12 +2,12 @@ using KingmakerTactics.Logging;
 using TurnBased.Controllers;
 
 namespace KingmakerTactics.Engine {
-    // Sub-project 1: Kingmaker's optional turn-based mode is out of scope; while a
-    // turn-based combat runs we issue nothing. Real TB support is sub-project 4.
-    // Polled per tick instead of tracked via ITurnBasedModeEnabledHandler: the static
-    // CombatController.IsInTurnBasedCombat() (KM IL: Player.IsInCombat && setting
-    // EnableTurnBasedMode && Game.CurrentMode == TurnBased) is also correct right after
-    // loading a save that is already in turn-based combat.
+    // v1.0 is real-time only (turn-based support dropped 2026-10-03): while a turn-based
+    // combat runs we issue nothing. Polled per tick instead of tracked via
+    // ITurnBasedModeEnabledHandler: the static CombatController.IsInTurnBasedCombat()
+    // (KM IL: Player.IsInCombat && setting EnableTurnBasedMode && Game.CurrentMode != Cutscene;
+    // there is no TurnBased game mode) is also correct right after loading a save that is
+    // already in turn-based combat.
     internal static class TurnBasedGate {
         internal class State {
             bool last;

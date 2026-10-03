@@ -55,6 +55,10 @@ namespace KingmakerTactics.Engine {
 
         public static void Tick(float gameTimeSec) {
             if (TurnBasedGate.IsActive()) return;
+            // Save load: Player.Party → UpdateCharacterLists NREs until the load finishes
+            // (deck 2026-10-03, "Tick error" right before OnAreaDidLoad).
+            var loading = Kingmaker.EntitySystem.Persistence.LoadingProcess.Instance;
+            if (loading != null && loading.IsLoadingInProcess) return;
             bool inCombat = Game.Instance.Player.IsInCombat;
 
             // Combat-end transition: log + reset the foreign-command tracker. The legacy
@@ -279,10 +283,12 @@ namespace KingmakerTactics.Engine {
                             tick.WalkHold = $"Rule {i} \"{rule.Name}\" ({source})";
                         }
                         Log.Engine.Trace($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): move not needed or not possible");
+                    } else if (ActionValidator.LastRejectSatisfied) {
+                        Log.Engine.Trace($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): nothing to do ({ActionValidator.LastRejectReason})");
                     } else if (notExecutableWarn.ShouldWarn(unit.UniqueId, entry.Id)) {
-                        Log.Engine.Warn($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable (further repeats this combat: trace only)");
+                        Log.Engine.Warn($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable: {ActionValidator.LastRejectReason ?? "see trace"} (further repeats this combat: trace only)");
                     } else {
-                        Log.Engine.Trace($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable");
+                        Log.Engine.Trace($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable: {ActionValidator.LastRejectReason ?? "see trace"}");
                     }
                     continue;
                 }
