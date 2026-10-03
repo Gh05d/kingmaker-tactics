@@ -67,11 +67,36 @@ namespace KingmakerTactics.UI {
             return component;
         }
 
+        /// <summary>
+        /// AddComponent for TextMeshPro components that keeps the RectTransform as configured.
+        /// Kingmaker's old TextMeshPro (Assembly-CSharp-firstpass) resets sizeDelta to its
+        /// 200x50 default when the component is added, so a label stretched with FillParent
+        /// ended up 200 wider and 50 taller than its parent (deck measurement 2026-10-03:
+        /// offsetMin (-100,-25), offsetMax (100,25)) — left-aligned text spilled out of its
+        /// artwork on the left, right-aligned on the right. Wrath's newer TMP does not do this.
+        /// </summary>
+        public static T AddTmp<T>(GameObject go) where T : Component {
+            var rt = go.GetComponent<RectTransform>();
+            if (rt == null) return go.AddComponent<T>();
+            var anchorMin = rt.anchorMin;
+            var anchorMax = rt.anchorMax;
+            var pivot = rt.pivot;
+            var offsetMin = rt.offsetMin;
+            var offsetMax = rt.offsetMax;
+            var component = go.AddComponent<T>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.pivot = pivot;
+            rt.offsetMin = offsetMin;
+            rt.offsetMax = offsetMax;
+            return component;
+        }
+
         public static TextMeshProUGUI AddLabel(GameObject parent, string text, float fontSize = 20f,
             TextAlignmentOptions alignment = TextAlignmentOptions.MidlineLeft, Color? color = null) {
             var (labelObj, labelRect) = Create("Label", parent.transform);
             labelRect.FillParent();
-            var tmp = labelObj.AddComponent<TextMeshProUGUI>();
+            var tmp = AddTmp<TextMeshProUGUI>(labelObj);
             tmp.text = text;
             tmp.fontSize = fontSize * FontScale;
             tmp.alignment = alignment;
@@ -112,14 +137,14 @@ namespace KingmakerTactics.UI {
             // Text component
             var (textObj, textRect) = Create("Text", viewport.transform);
             textRect.FillParent();
-            var textTmp = textObj.AddComponent<TextMeshProUGUI>();
+            var textTmp = AddTmp<TextMeshProUGUI>(textObj);
             textTmp.fontSize = fontSize * FontScale;
             textTmp.alignment = TextAlignmentOptions.MidlineLeft;
             textTmp.color = Theme.Ink;
             textTmp.enableWordWrapping = false;
             textTmp.overflowMode = TextOverflowModes.Ellipsis;
 
-            var inputField = obj.AddComponent<TMP_InputField>();
+            var inputField = AddTmp<TMP_InputField>(obj);
             inputField.textViewport = viewportRect;
             inputField.textComponent = textTmp;
             inputField.text = initialText;
@@ -131,7 +156,7 @@ namespace KingmakerTactics.UI {
             if (!string.IsNullOrEmpty(placeholderText)) {
                 var (phObj, phRect) = Create("Placeholder", viewport.transform);
                 phRect.FillParent();
-                var phTmp = phObj.AddComponent<TextMeshProUGUI>();
+                var phTmp = AddTmp<TextMeshProUGUI>(phObj);
                 phTmp.fontSize = fontSize * FontScale;
                 phTmp.alignment = TextAlignmentOptions.MidlineLeft;
                 phTmp.color = Theme.InkMuted;
@@ -224,7 +249,7 @@ namespace KingmakerTactics.UI {
             caretRect.sizeDelta = new Vector2(10, 0);
             caretRect.anchoredPosition = Vector2.zero;
 
-            caretText = caretObj.AddComponent<TextMeshProUGUI>();
+            caretText = UIHelpers.AddTmp<TextMeshProUGUI>(caretObj);
             caretText.font = textComponent.font;
             caretText.fontSize = textComponent.fontSize;
             caretText.text = "|";

@@ -371,7 +371,7 @@ namespace KingmakerTactics.UI {
             if (prefix.HasValue) IconImage(root.transform, "Prefix", prefix.Value, Theme.IconSmall);
 
             var (txt, _t) = UIHelpers.Create("Text", root.transform);
-            var tmp = txt.AddComponent<TextMeshProUGUI>();
+            var tmp = UIHelpers.AddTmp<TextMeshProUGUI>(txt);
             tmp.text = text;
             tmp.fontSize = fontSize * UIHelpers.FontScale;
             tmp.fontStyle = FontStyles.Italic;
