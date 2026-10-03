@@ -1,0 +1,16 @@
+{
+  "Id": "4b4d5e1e-0000-4000-8000-000000000004",
+  "Name": "KM Smoke 4 · Rage on [toggle]",
+  "Enabled": true,
+  "CooldownRounds": 0,
+  "ConditionGroups": [],
+  "Action": {
+    "Type": 3,
+    "AbilityId": "df6a2cce8e3a9bd4592fb1968b83f730",
+    "ToggleMode": 0
+  },
+  "Target": {
+    "Type": 0,
+    "Filter": ""
+  }
+}

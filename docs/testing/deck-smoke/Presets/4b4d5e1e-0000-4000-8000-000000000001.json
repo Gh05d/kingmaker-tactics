@@ -1,0 +1,27 @@
+{
+  "Id": "4b4d5e1e-0000-4000-8000-000000000001",
+  "Name": "KM Smoke 1 · Heal ally < 50% [Standard]",
+  "Enabled": true,
+  "CooldownRounds": 1,
+  "ConditionGroups": [
+    {
+      "Conditions": [
+        {
+          "Subject": 1,
+          "Property": 0,
+          "Operator": 0,
+          "Value": "50",
+          "Value2": ""
+        }
+      ]
+    }
+  ],
+  "Action": {
+    "Type": 5,
+    "AbilityId": ""
+  },
+  "Target": {
+    "Type": 1,
+    "Filter": ""
+  }
+}

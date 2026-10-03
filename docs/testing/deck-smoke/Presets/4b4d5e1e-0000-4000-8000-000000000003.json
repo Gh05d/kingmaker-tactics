@@ -1,0 +1,16 @@
+{
+  "Id": "4b4d5e1e-0000-4000-8000-000000000003",
+  "Name": "KM Smoke 3 · Inspire Courage on [toggle]",
+  "Enabled": true,
+  "CooldownRounds": 0,
+  "ConditionGroups": [],
+  "Action": {
+    "Type": 3,
+    "AbilityId": "5250fe10c377fdb49be449dfe050ba70",
+    "ToggleMode": 0
+  },
+  "Target": {
+    "Type": 0,
+    "Filter": ""
+  }
+}

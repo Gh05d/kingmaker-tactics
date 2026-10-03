@@ -1,24 +1,20 @@
-# Deck smoke-test pack
+# Deck smoke-test pack (Kingmaker)
 
-Synthetic rule pack for engine changes (slot economy, action budget, move action). Empty
-conditions + `CooldownRounds: 0` force the full pattern every tick; enums are numeric
-(`ActionType`: 1 CastSpell, 4 AttackTarget, 9 MoveToTarget; `TargetType`: 0 Self, 4 EnemyNearest;
-`RangeBracket`: 0 Melee, 2 Short). Ability GUIDs are Ember's Evil Eye (AC) and Cackle.
+Pack **Kingmaker Smoke** (`…00aa`) for the sub-project-1 acceptance test. Rules (top = highest priority):
 
-Push (game closed or before the next mod load — presets/packs are read at mod start):
+1. Heal (any source) the lowest-HP ally when an ally is below 50 % HP
+2. Bless on self, cooldown 3 rounds (any caster with Bless)
+3. Inspire Courage toggle on (bards, e.g. Linzi)
+4. Barbarian rage toggle on (`StandartRageActivateableAbility`, e.g. Amiri)
+5. Attack nearest enemy, no cooldown
 
-    tar -C docs/testing/deck-smoke -cf - Presets Packs | ssh deck-direct "tar -xf - -C '<gamepath>/Mods/KingmakerTactics'"
+A rule a unit cannot perform (no Bless, no rage) is skipped by the validator — apply the whole
+pack to every companion. Enums are numeric (`ActionType`: 0 CastSpell, 3 Toggle, 4 Attack, 5 Heal;
+`TargetType`: 0 Self, 1 AllyLowestHp, 4 EnemyNearest). GUIDs are verified against
+`kingmaker/il-dump/blueprints-index.tsv`.
 
-Then apply the pack to the unit in the panel; re-apply after adding presets (no sync on load).
-Remove the pack's rules from the unit afterwards (chip menu, option 2) — it fires every round otherwise.
+Push with the game closed (presets/packs are read at mod start):
 
-## Walk Hold Test (pack `…fac2`)
+    tar -C docs/testing/deck-smoke -cf - Presets Packs | ssh deck-direct "tar -xf - -C '/run/media/deck/3b03f019-ee3d-473e-beb1-98236afc5254/Games/epic/PathfinderKingmaker/Mods/KingmakerTactics'"
 
-Reproduces the 1.31.0 report: walk rule above Cackle, both cooldown 0, no conditions.
-Preset `…0005` walks to within Melee (2 m) of a **pinned ally** (Short was too short: a 16.7 m start finished the walk inside one 3 s tick window and never exercised the hold) (`TargetType.SpecificAlly` = 22,
-`Filter` = the ally's `UniqueId`; the fixture pins Arasmes in Pascal's save,
-`43b607d1-766c-4cac-8034-adfd79124293` — replace for another save, ids are in
-`UserSettings/tactics-<GameId>.json`). Apply to Ember, start a fight with her well behind Arasmes.
-Expected log: `MoveToTarget: Ember -> Arasmes …` once, then `waiting for walk to finish (Rule N …)`
-on the Cackle line every tick until `UnitMoveTo [Move] ended: Success`, then Cackle fires.
-No `Move action spent` on the walk rule.
+Then apply the pack to the units in the panel (Ctrl+T). Remove the pack's rules afterwards — they fire every round.
