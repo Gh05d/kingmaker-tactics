@@ -118,7 +118,6 @@ namespace KingmakerTactics.UI {
             // margin shows the world through instead of hard black bars (spec §3.1).
             var (root, rootRect) = UIHelpers.Create("KingmakerTacticsPanel", canvas);
             panelRoot = root;
-            TmpRectSync.Attach(root);   // Kingmaker's TMP keeps stale meshes after layout resizes
             rootRect.SetAnchor(0, 1, 0, 1);
             rootRect.sizeDelta = Vector2.zero;
             UIHelpers.AddBackground(root, Theme.DimBackdrop);
