@@ -1,5 +1,7 @@
 # Spellbook, AbilityData, Items, Heal
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Operative rules for `ActionValidator.Find` / `ActionValidator.Cast/UseItem/Heal`, `SpellDropdownProvider`, and everything AbilityData/spellbook/item related. IL evidence and incident reports: [`../docs/wrath-api-deep-dive.md`](../docs/wrath-api-deep-dive.md).
 
 ## Spellbook Storage & Slots

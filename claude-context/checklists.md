@@ -1,5 +1,7 @@
 # Checklists: Adding Conditions, Subjects, Properties, Actions
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Read the matching checklist COMPLETELY before adding a new enum member — every one of these encodes sites that were missed at least once and shipped broken. Enum members are APPEND-ONLY (JSON persists numeric indices, see [`gotchas-persistence.md`](gotchas-persistence.md)).
 
 ## New `ConditionSubject` (scope classification)

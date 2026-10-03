@@ -23,7 +23,7 @@ namespace KingmakerTactics.Logging {
                 RotateOldFiles(logsDir);
 
                 var stamp = DateTime.Now.ToString("yyyy-MM-dd-HHmmss");
-                CurrentSessionPath = Path.Combine(logsDir, $"wrath-tactics-{stamp}.log");
+                CurrentSessionPath = Path.Combine(logsDir, $"kingmaker-tactics-{stamp}.log");
 
                 writer = new StreamWriter(CurrentSessionPath, append: false) {
                     AutoFlush = true,
@@ -61,7 +61,7 @@ namespace KingmakerTactics.Logging {
 
         static void RotateOldFiles(string logsDir) {
             try {
-                var files = Directory.GetFiles(logsDir, "wrath-tactics-*.log")
+                var files = Directory.GetFiles(logsDir, "kingmaker-tactics-*.log")
                     .OrderBy(f => File.GetCreationTimeUtc(f))
                     .ToList();
                 while (files.Count >= MaxSessionFiles) {

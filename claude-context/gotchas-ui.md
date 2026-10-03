@@ -1,5 +1,7 @@
 # UI: Widgets, Unity Layout, Pickers
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Operative rules for `UI/` (TacticsPanel, RuleEditorWidget, ConditionRowWidget, PresetPanel, pickers, UIHelpers). Persistence routing rules (`onChanged` / `PersistEdit`) live in [`gotchas-persistence.md`](gotchas-persistence.md). Shared Unity/TMP gotchas: `pathfinder-mods/wrath/CLAUDE.md` reference (`pathfinder-mods/wrath/docs/engine-api.md` §Unity UI & TMP).
 
 ## Unity Layout

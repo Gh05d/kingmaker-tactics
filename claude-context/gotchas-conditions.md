@@ -1,5 +1,7 @@
 # ConditionEvaluator & Detection APIs
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Operative rules for `Engine/ConditionEvaluator*` (buckets, latches, encodings) and unit-detection APIs. IL evidence, version history, and incident reports: [`../docs/wrath-api-deep-dive.md`](../docs/wrath-api-deep-dive.md).
 
 ## Buckets, Latches, Scopes

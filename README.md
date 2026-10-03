@@ -2,7 +2,9 @@
 
 **Make Companions Smart Again.**
 
-A Unity Mod Manager mod for **Pathfinder: Wrath of the Righteous** that brings Dragon Age Origins-style tactical AI to your party. Define priority-ordered rules per companion (and globally), and the mod evaluates them every few seconds in real-time combat — automatically casting spells, using items, activating class abilities, or picking attack targets based on the conditions you set.
+A Unity Mod Manager mod for **Pathfinder: Kingmaker** (Enhanced Plus Edition) that brings Dragon Age Origins-style tactical AI to your party. Define priority-ordered rules per companion (and globally), and the mod evaluates them every few seconds in real-time combat — automatically casting spells, using items, activating class abilities, or picking attack targets based on the conditions you set.
+
+> **Status: pre-release — not on Nexus yet.** Port of [Wrath Tactics](https://github.com/Gh05d/wrath-tactics) to Pathfinder: Kingmaker. Not yet included: per-portrait on/off badges, buff-mod integration, turn-based mode (tactics pause while turn-based combat is active).
 
 ---
 
@@ -27,11 +29,11 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 - **Target selectors**: Self, Ally with lowest HP, Enemy with highest AC / biggest threat / specific creature type, or the specific entity that matched the condition
 - **Ability variants supported** — Evil Eye – AC / Evil Eye – Attack / Channel Positive Energy – Damage Undead, etc., with full cast animations
 - **BubbleBuffs compatible** — Kingmaker Tactics handles in-combat reactions while BubbleBuffs handles pre-combat buffing. No conflicts.
-- **Per-session debug logging** to its own file (`Mods/KingmakerTactics/Logs/wrath-tactics-YYYY-MM-DD-HHmmss.log`) with levels (Trace/Debug/Info/Warn/Error) and categories (Engine/UI/Persistence/Compat/Game)
+- **Per-session debug logging** to its own file (`Mods/KingmakerTactics/Logs/kingmaker-tactics-YYYY-MM-DD-HHmmss.log`) with levels (Trace/Debug/Info/Warn/Error) and categories (Engine/UI/Persistence/Compat/Game)
 
 ## Installation
 
-1. Install [Unity Mod Manager](https://www.nexusmods.com/site/mods/21) and enable it for Pathfinder: Wrath of the Righteous
+1. Install [Unity Mod Manager](https://www.nexusmods.com/site/mods/21) and enable it for Pathfinder: Kingmaker
 2. Download the latest `KingmakerTactics-X.Y.Z.zip` from the [Releases](https://github.com/Gh05d/kingmaker-tactics/releases) page
 3. Drag the zip onto the UMM window — it installs automatically
 4. Launch the game
@@ -157,19 +159,15 @@ A **positive** margin means you hit easily — it's how many points of slack you
 
 **WithinRange** uses brackets, not raw meters: Melee (≤2 m), Cone (≤5 m), Short (≤10 m), Medium (≤20 m), Far (≤30 m), Long (≤40 m). Use **`<= Short`** for "within 10 m or closer" — `= Short` means *only* the 5–10 m band and excludes anything nearer. Note: Far (20–30 m) overlaps Long (20–40 m) — Long kept its original band so rules created before Far existed behave unchanged.
 
-## BubbleBuffs compatibility
-
-Kingmaker Tactics plays nicely with [Buff It 2 The Limit (BubbleBuffs)](https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/948). The HUD button for Kingmaker Tactics is placed next to BubbleBuffs' quick-buttons when both mods are installed. There are no shared state conflicts — BubbleBuffs handles pre-combat buff routines, Kingmaker Tactics handles in-combat tactical decisions.
-
 ## Inspiration
 
-Dragon Age: Origins had a wonderful **Tactics** system that let you program companion behavior with slot-based condition-action rules. This mod brings that concept to Pathfinder: WotR.
+Dragon Age: Origins had a wonderful **Tactics** system that let you program companion behavior with slot-based condition-action rules. This mod brings that concept to Pathfinder: Kingmaker.
 
 ## Development
 
 See [CLAUDE.md](CLAUDE.md) for dev notes. Built with:
 
-- .NET Framework 4.8.1
+- .NET Framework 4.7.2 (Kingmaker runs Unity 2018.4)
 - [BepInEx.AssemblyPublicizer.MSBuild](https://github.com/BepInEx/BepInEx.AssemblyPublicizer) for accessing private game fields
 - [HarmonyLib](https://github.com/pardeike/Harmony) for game patches
 - [Unity Mod Manager](https://www.nexusmods.com/site/mods/21) framework
@@ -180,7 +178,7 @@ See [CLAUDE.md](CLAUDE.md) for dev notes. Built with:
 ~/.dotnet/dotnet build KingmakerTactics/KingmakerTactics.csproj -p:SolutionDir=$(pwd)/
 ```
 
-On Linux, symlink or create `GamePath.props` pointing to the game's `Wrath_Data/Managed` directory.
+On Linux, create `GamePath.props` with `<KingmakerInstallDir>` pointing to a directory that contains the game's `Kingmaker_Data/Managed` (plus `UnityModManager/`).
 
 ## License
 

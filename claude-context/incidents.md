@@ -1,5 +1,7 @@
 # Incident-Historie hinter den Top Gotchas (Wrath Tactics)
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Belege, die aus `CLAUDE.md` ausgelagert wurden; die Regel selbst bleibt dort ein Einzeiler. Cross-mod incidents (deploy timeouts, Deck-offline releases, engine-API regressions) live in the parent repo: `pathfinder-mods/claude-context/incidents.md`.
 
 - **Blueprint-Matching ist exact-only (GUID oder voller Name), nie `Contains`** (Top Gotchas): Substring matchte versteckte Item-/Aura-Facts — `WrathOfTheUndeadCountBuff` machte Golems zu Untoten. Bug-Klasse traf HasBuff (pre-1.17.4) UND CreatureType (pre-1.23.3). Details `gotchas-conditions.md`.

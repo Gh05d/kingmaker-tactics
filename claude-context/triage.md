@@ -1,5 +1,7 @@
 # Triage: Bug Reports, Logs, "Rule Didn't Fire"
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Recipes for diagnosing user reports and deck-side behavior. General bug-report protocol (no-log reproduction from blueprints, UMM-off test): parent `pathfinder-mods/CLAUDE.md` §Working Style.
 
 ## Before Diagnosing Anything

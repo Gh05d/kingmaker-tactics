@@ -1,5 +1,7 @@
 # Testing — xUnit suite, mono runner, Deck smoke tests
 
+> **Wrath-Historie.** Engine-Aussagen in dieser Datei stammen aus Wrath Tactics; für Kingmaker gilt `../../claude-context/engine-verification.md`.
+
 Load when: running or extending `KingmakerTactics.Tests/`, when the test run fails after a build, or when preparing a Deck smoke test. Commands stay in `CLAUDE.md` §Tests.
 
 - **Flaky mono runner — loop until green before believing failures**: the first run after a build often crashes the mono host (mass-failures with run-to-run varying counts = flake signature, not regression; can flake several times in a row). `for i in 1 2 3; do ~/.dotnet/dotnet test --no-build KingmakerTactics.Tests/KingmakerTactics.Tests.csproj -p:SolutionDir=$(pwd)/; done` — trust the first all-green run; only trust failures that reproduce.

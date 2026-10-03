@@ -2,9 +2,9 @@
 
 ## Overview
 
-Dragon Age Origins-style companion tactics for Pathfinder: Wrath of the Righteous. UMM mod that lets players define prioritized rules per companion (and globally) that are evaluated in real-time combat and executed as actions.
+Dragon Age Origins-style companion tactics for Pathfinder: Kingmaker (Enhanced Plus Edition) — a fork of Wrath Tactics with full history (remote `wrath` = Gh05d/wrath-tactics for cherry-picks). UMM mod that lets players define prioritized rules per companion (and globally) that are evaluated in real-time combat and executed as actions.
 
-Shared build/deploy/Nexus/release rules: → parent `pathfinder-mods/CLAUDE.md` (§Common Build Setup, §Steam Deck Deployment, §Nexus Mods, §Release Process). Incident history behind the rules here: `claude-context/incidents.md`.
+Kingmaker paths, logs (`output_log.txt`), blueprint index and **IL-verified engine facts**: → `../CLAUDE.md` and `../claude-context/engine-verification.md` — Wrath-era engine notes in this repo's `claude-context/` and `docs/` are history, not Kingmaker facts. Shared build/deploy/Nexus/release rules: → `pathfinder-mods/CLAUDE.md` (§Common Build Setup, §Steam Deck Deployment, §Nexus Mods, §Release Process). Incident history behind the rules here: `claude-context/incidents.md`.
 
 ## Build
 
@@ -20,7 +20,7 @@ Shared build/deploy/Nexus/release rules: → parent `pathfinder-mods/CLAUDE.md` 
 
 ## Tests
 
-Pure-logic xUnit suite in `KingmakerTactics.Tests/` (net481; mono hosts the runner on Linux — `sudo apt install mono-complete` one-time). Run before pushing changes to `ConditionEvaluator`, `BuffBlueprintProvider`, `CommonBuffRegistry`, or `Models/Enums.cs` (`RangeBrackets`).
+Pure-logic xUnit suite in `KingmakerTactics.Tests/` (net472; mono hosts the runner on Linux — `sudo apt install mono-complete` one-time). Run before pushing changes to `ConditionEvaluator`, `BuffBlueprintProvider`, `CommonBuffRegistry`, or `Models/Enums.cs` (`RangeBrackets`).
 
 ```bash
 ~/.dotnet/dotnet test KingmakerTactics.Tests/KingmakerTactics.Tests.csproj -p:SolutionDir=$(pwd)/
@@ -80,9 +80,9 @@ KingmakerTactics/
   UI/                  # TacticsPanel, RuleEditorWidget (+ partials .Action/.Cooldown/.Header/.Target),
                        # ConditionRowWidget, PresetPanel, PackPanel, PackPalette, SaveAsPackOverlay,
                        # BuffPickerOverlay, SpellPickerOverlay, SpellDropdownProvider,
-                       # PortraitToggleBadge/PortraitToggleOverlay, UIHelpers,
+                       # PortraitToggleOverlay (no-op stub until sub-project 2), UIHelpers,
                        # Theme (alle Farben/Maße) + ThemeProvider + Widgets (alle Controls) — SSoT, s. gotchas-ui.md
-  Compatibility/       # BubbleBuffsCompat (Buff It 2 The Limit integration)
+  Compatibility/       # KingmakerShim (pure Wrath→Kingmaker member mappings, no logic)
   Localization/        # Strings + EnumLabels + 5 locale JSONs (en/de/fr/ru/zh)
   Logging/             # Category-based logging (Engine, Game, Persistence, UI)
 tools/extract_sprites.py  # (repo root) Owlcat-Sprites + 9-Slice-Borders aus sharedassets0.assets (UnityPy-venv)
@@ -102,7 +102,7 @@ Main.OnUpdate() → TacticsEvaluator.Tick(gameTime)
 ## UI
 
 - **Keybind:** `Ctrl+T` toggles the Tactics panel, `ESC` closes it when open
-- **HUD button:** helmet-sprite button parented into the game's HUD `GridLayoutGroup` (next to BubbleBuffs' buttons when installed); standalone fallback bottom-left `anchoredPosition (20,120)`, 48×48; created lazily once `Game.Instance.UI.Canvas` is available and re-created only if destroyed (BubbleBuffs rebuilds the container). Source: `UI/TacticsPanel.cs` ~1018-1107.
+- **HUD button:** helmet-sprite button parented into the game's HUD `GridLayoutGroup` (BubbleBuffs container lookup kept from Wrath; Kingmaker container still to be confirmed on the deck); standalone fallback bottom-left `anchoredPosition (20,120)`, 48×48; created lazily once `Game.Instance.UI.Canvas` is available and re-created only if destroyed (BubbleBuffs rebuilds the container). Source: `UI/TacticsPanel.cs` ~1018-1107.
 
 ## Topic Index
 
@@ -121,7 +121,7 @@ Detailed gotchas live in `claude-context/` — **read the matching file BEFORE e
 | Test suite, mono runner, Deck smoke-test pack | `claude-context/testing.md` |
 | Why a Top Gotcha exists (dated regressions) | `claude-context/incidents.md` |
 
-IL evidence, version history, and incident reports: `docs/wrath-api-deep-dive.md`.
+IL evidence, version history, and incident reports (Wrath era): `docs/wrath-api-deep-dive.md`. Kingmaker: `../claude-context/engine-verification.md`.
 
 **Maintenance rule:** new gotcha → matching topic file. This file only gets a one-liner if violating the rule causes silent corruption (§Top Gotchas). Update the table only if the routing itself changes.
 
@@ -149,7 +149,7 @@ IL evidence, version history, and incident reports: `docs/wrath-api-deep-dive.md
 
 ## Logs
 
-- **Mod session logs**: `<game>/Mods/KingmakerTactics/Logs/wrath-tactics-*.log` (separate from `Player.log`). Latest: `ssh deck-direct "ls -t '<game>/Mods/KingmakerTactics/Logs/' | head -1"`.
+- **Mod session logs**: `<game>/Mods/KingmakerTactics/Logs/kingmaker-tactics-*.log` (separate from the game's `output_log.txt`). Latest: `ssh deck-direct "ls -t '<game>/Mods/KingmakerTactics/Logs/' | head -1"`.
 - Triage recipes ("rule didn't fire", preemption, deploy verification): `claude-context/triage.md`.
 - **„Wer hat mein Kommando unterbrochen?"**: `grep 'interrupted (started='` im Mod-Log — `CommandDiagnostics` loggt Aufrufer-Frames und die drei `TickCommand`-Interrupt-Eingaben. `EXECUTED` belegt nur die Ausgabe, `ended: Success` den Effekt (`triage.md`).
 
