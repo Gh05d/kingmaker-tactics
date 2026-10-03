@@ -121,8 +121,10 @@ namespace KingmakerTactics {
             Logging.Log.Engine.Error(ex, context);
         }
 
-        // Task 9: Kingmaker area hook (IAreaHandler does not exist in Kingmaker)
-        class SaveLoadWatcher {
+        // Kingmaker has no IAreaHandler; ISceneHandler.OnAreaDidLoad is raised on save load and
+        // on area transition (engine-verification.md §12). Same-area teleports do not raise it,
+        // which needs no reset.
+        class SaveLoadWatcher : ISceneHandler {
             public void OnAreaDidLoad() {
                 Persistence.ConfigManager.Reset();
                 Engine.TacticsEvaluator.Reset();
