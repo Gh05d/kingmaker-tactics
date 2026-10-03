@@ -3,7 +3,7 @@
 Pack **Kingmaker Smoke** (`…00aa`) for the sub-project-1 acceptance test. Rules (top = highest priority):
 
 1. Heal (any source) the lowest-HP ally when an ally is below 50 % HP
-2. Bless on self, cooldown 3 rounds (any caster with Bless)
+2. Bless on self when the Bless buff (`BlessBuff` 87b8c627…) is missing, cooldown 3 rounds
 3. Inspire Courage toggle on (bards, e.g. Linzi)
 4. Barbarian rage toggle on (`StandartRageActivateableAbility`, e.g. Amiri)
 5. Attack nearest enemy, no cooldown

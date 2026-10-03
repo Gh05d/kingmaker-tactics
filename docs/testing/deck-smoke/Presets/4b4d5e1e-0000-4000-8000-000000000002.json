@@ -1,9 +1,21 @@
 {
   "Id": "4b4d5e1e-0000-4000-8000-000000000002",
-  "Name": "KM Smoke 2 · Bless (self) [Standard]",
+  "Name": "KM Smoke 2 · Bless (self, if missing) [Standard]",
   "Enabled": true,
   "CooldownRounds": 3,
-  "ConditionGroups": [],
+  "ConditionGroups": [
+    {
+      "Conditions": [
+        {
+          "Subject": 0,
+          "Property": 2,
+          "Operator": 3,
+          "Value": "87b8c6270ea85c743afc734dfe99afee",
+          "Value2": ""
+        }
+      ]
+    }
+  ],
   "Action": {
     "Type": 0,
     "AbilityId": "90e59f4a4ada87243b7b3535a06d0638"
