@@ -109,7 +109,7 @@ namespace KingmakerTactics.Engine {
                     var resource = ability.Blueprint.GetComponent<AbilityResourceLogic>();
                     bool resourceOk = true;
                     if (resource != null && resource.IsSpendResource) {
-                        var required = (BlueprintScriptableObject)ability.OverrideRequiredResource
+                        var required = (BlueprintScriptableObject)ability.Resource // KM: no OverrideRequiredResource (engine-verification.md §13)
                             ?? resource.RequiredResource;
                         if (required != null) {
                             int available = owner.Resources().GetResourceAmount(required);
@@ -179,7 +179,7 @@ namespace KingmakerTactics.Engine {
                         }
 
                         var scrollAbility = new AbilityData(usable.Ability, owner.Descriptor) {
-                            OverrideCasterLevel = usable.CasterLevel,
+                            // KM: no OverrideCasterLevel; the cast itself runs through ItemEntity.TryUseFromInventory (item CL)
                             OverrideSpellLevel = usable.SpellLevel,
                         };
                         inventorySource = item;
@@ -195,7 +195,7 @@ namespace KingmakerTactics.Engine {
                             continue;
                         }
                         var potionAbility = new AbilityData(usable.Ability, owner.Descriptor) {
-                            OverrideCasterLevel = usable.CasterLevel,
+                            // KM: no OverrideCasterLevel; the cast itself runs through ItemEntity.TryUseFromInventory (item CL)
                             OverrideSpellLevel = usable.SpellLevel,
                         };
                         inventorySource = item;

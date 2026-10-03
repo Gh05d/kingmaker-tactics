@@ -40,12 +40,21 @@ namespace KingmakerTactics.Tests {
                 ActionSlots.Classify(type, UnitCommand.CommandType.Move));
         }
 
+        // Kingmaker: UnitSwitchHandEquipmentSet passes CommandType.Move to its base ctor
+        // (engine-verification.md §1) — Wrath's version is Free.
         [Fact]
-        public void switch_weapon_set_is_a_free_action() {
-            Assert.Equal(UnitCommand.CommandType.Free,
+        public void switch_weapon_set_is_a_move_action() {
+            Assert.Equal(UnitCommand.CommandType.Move,
                 ActionSlots.Classify(ActionType.SwitchWeaponSet, null));
-            Assert.Equal(UnitCommand.CommandType.Free,
+            Assert.Equal(UnitCommand.CommandType.Move,
                 ActionSlots.Classify(ActionType.SwitchWeaponSet, UnitCommand.CommandType.Standard));
+        }
+
+        // A Move-slot command removes the unit's own pending Standard through the paired-slot
+        // rule, so a weapon swap must pass the cross-slot check like MoveToTarget.
+        [Fact]
+        public void switch_weapon_set_needs_cross_slot_check() {
+            Assert.True(ActionSlots.NeedsCrossSlotCheck(ActionType.SwitchWeaponSet));
         }
 
         [Fact]

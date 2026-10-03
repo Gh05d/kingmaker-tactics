@@ -89,7 +89,7 @@ namespace KingmakerTactics.Engine {
 
                 inventorySource = item;
                 return new AbilityData(usable.Ability, owner.Descriptor) {
-                    OverrideCasterLevel = usable.CasterLevel,
+                    // KM: no OverrideCasterLevel; the cast itself runs through ItemEntity.TryUseFromInventory (item CL)
                     OverrideSpellLevel = usable.SpellLevel,
                 };
             }

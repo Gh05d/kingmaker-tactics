@@ -241,7 +241,7 @@ namespace KingmakerTactics.Engine {
 
                     // Synthesize AbilityData with item's caster/spell level overrides
                     var itemAbility = new AbilityData(usable.Ability, owner.Descriptor) {
-                        OverrideCasterLevel = usable.CasterLevel,
+                        // KM: no OverrideCasterLevel; the cast itself runs through ItemEntity.TryUseFromInventory (item CL)
                         OverrideSpellLevel = usable.SpellLevel,
                     };
 

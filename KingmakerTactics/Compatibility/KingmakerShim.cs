@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Kingmaker;
 using Kingmaker.EntitySystem.Entities;
+using Kingmaker.UnitLogic.Commands;
+using Kingmaker.UnitLogic.Commands.Base;
 using Kingmaker.UnitLogic;
 
 namespace KingmakerTactics.Compatibility {
@@ -14,6 +16,11 @@ namespace KingmakerTactics.Compatibility {
         public static IEnumerable<Spellbook> Spellbooks(this UnitEntityData u) => u.Descriptor.Spellbooks;
         public static UnitAbilityResourceCollection Resources(this UnitEntityData u) => u.Descriptor.Resources;
         public static UnitProgressionData Progression(this UnitEntityData u) => u.Descriptor.Progression;
+
+        // Wrath's UnitCommands.ContainsOrQueued. Kingmaker: Contains(c) is m_Commands[c.Type] == c,
+        // the queue is a public LinkedList (engine-verification.md §10).
+        public static bool ContainsOrQueued(this UnitCommands commands, UnitCommand c) =>
+            commands.Contains(c) || (commands.Queue != null && commands.Queue.Contains(c));
 
         // Wrath's Player.PartyAndPets. Kingmaker has at most one pet per unit (UnitDescriptor.Pet);
         // Player.Party may already contain pets (AddCharacterToLists), so duplicates are skipped.

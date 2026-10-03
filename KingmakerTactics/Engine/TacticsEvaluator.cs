@@ -452,7 +452,7 @@ namespace KingmakerTactics.Engine {
                 if (!(cmd is UnitUseAbility) && !(cmd is UnitAttack)) continue;
 
                 var occupied = (UnitCommand.CommandType)i;
-                bool approaching = !cmd.IsStarted && !cmd.IsUnitCloseEnough();
+                bool approaching = !cmd.IsStarted && !cmd.IsUnitEnoughClose; // KM property (engine-verification.md §10)
                 bool own = PlayerCommandGuard.IsOurs(unit, cmd);
                 bool isCast = cmd is UnitUseAbility;
                 var verdict = ActionSlots.CheckConflict(issuing, occupied, cmd.IsStarted, approaching, own, isCast, issuingOnCooldown, standardRemaining);

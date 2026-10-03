@@ -82,7 +82,7 @@ namespace KingmakerTactics.Engine {
             try {
                 var state = cmd.Executor?.State();
                 var queue = cmd.Executor?.Commands?.Queue;
-                return $", asap={cmd.InterruptAsSoonAsPossible}, interruptible={cmd.IsInterruptible}, shouldBeInterrupted={cmd.ShouldBeInterrupted}, canAct={state?.CanAct}, canCast={state?.CanCast}, closeEnough={cmd.IsUnitCloseEnough()}, queued={queue?.Count ?? 0}, aiMark={cmd.AiCanInterruptMark}, aiAction={(cmd.AiAction != null)}";
+                return $", asap={cmd.InterruptAsSoonAsPossible}, interruptible={cmd.IsInterruptible}, shouldBeInterrupted={cmd.ShouldBeInterrupted}, canAct={state?.CanAct}, closeEnough={cmd.IsUnitEnoughClose}, queued={queue?.Count ?? 0}, byPlayer={cmd.CreatedByPlayer}, aiAction={(cmd.AiAction != null)}";
             } catch (Exception ex) {
                 return $", state? ({ex.GetType().Name})";
             }

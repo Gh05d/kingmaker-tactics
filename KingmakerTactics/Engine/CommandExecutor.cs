@@ -81,6 +81,17 @@ namespace KingmakerTactics.Engine {
                     }
                 }
             }
+            // Kingmaker also merges a UnitAttack into a running attack on the same target
+            // (engine-verification.md §2) — the attack IS happening; gate on the occupant.
+            if (command is UnitAttack ourAttack) {
+                for (int i = 0; i < slots.Length; i++) {
+                    if (slots[i] is UnitAttack other && other.IsRunning && other.Target == ourAttack.Target) {
+                        PlayerCommandGuard.Track(owner, other);
+                        Log.Engine.Debug($"Commands.Run merged attack into running attack for {owner.CharacterName} — gating on slot occupant");
+                        return other;
+                    }
+                }
+            }
             // Queue case: UnitCommands.Run → TryAddToQueueInsteadOfRunImmediately parks the
             // command in Commands.Queue when the unit holds an uninterruptible running
             // command (a cast in progress) or is already running a command on the same
@@ -88,7 +99,7 @@ namespace KingmakerTactics.Engine {
             // engine flags the occupant InterruptAsSoonAsPossible and runs ours from the
             // queue once slot and paired slot are free — exactly what a player click does
             // in the same situation. Treat it as issued: track it, gate on it. Both
-            // trackers drop it again if a later Run() clears the queue (ContainsOrQueued).
+            // trackers drop it again if a later Run() clears the queue (Contains || Queue.Contains).
             var queue = owner.Commands.Queue;
             if (queue != null && queue.Contains(command)) {
                 PlayerCommandGuard.Track(owner, command);
@@ -131,49 +142,42 @@ namespace KingmakerTactics.Engine {
 
             // Rod activation (no-op when action.MetamagicRod == null or no rod matches).
             // Done after resolution, before any cast path — applies whether we end up in
-            // the inventory branch, the spellbook branch, or the Rulebook fallback.
+            // the inventory branch or the spellbook branch.
             MaybeActivateRod(action, owner, ability);
 
-            // Inventory source (scroll/potion) — synthetic AbilityData, Rulebook.Trigger + manual consume.
-            // Mirror of ExecuteHeal's inventory path.
+            // Inventory source (scroll/potion): Kingmaker's own ItemEntity.TryUseFromInventory —
+            // temp Ability fact with SourceItem (item caster level via GetParamsFromItem),
+            // RuleCastSpell + InstantDeliver, AbilityData.Spend(), fact removed again
+            // (engine-verification.md §7; user decision 2026-10-03). Mirror of ExecuteHeal.
             if (inventorySource != null) {
                 try {
-                    Rulebook.Trigger(new RuleCastSpell(ability, targetWrapper));
-                    var usable = inventorySource.Blueprint as BlueprintItemEquipmentUsable;
-                    if (usable != null) ConsumeInventoryItem(inventorySource, usable, owner);
+                    if (!inventorySource.TryUseFromInventory(owner, targetWrapper)) {
+                        Log.Engine.Warn($"CastSpell: TryUseFromInventory refused {inventorySource.Blueprint.name} for {owner.CharacterName}");
+                        return false;
+                    }
                     string tgtDesc = target.IsPoint
                         ? $"point({target.Point.Value.x:F1},{target.Point.Value.z:F1})"
                         : (target.Unit?.CharacterName ?? "self");
                     Log.Engine.Info($"Cast (inventory): {inventorySource.Blueprint.name} -> {ability.Name} on {owner.CharacterName} -> {tgtDesc}");
                     return true;
                 } catch (Exception ex) {
-                    Log.Engine.Error(ex, $"CastSpell inventory trigger failed for {inventorySource.Blueprint.name}");
+                    Log.Engine.Error(ex, $"CastSpell TryUseFromInventory failed for {inventorySource.Blueprint.name}");
                     return false;
                 }
             }
 
-            // Spellbook / Wand / class ability — animated cast command.
+            // Spellbook / Wand / class ability — animated cast command. Kingmaker's
+            // CreateCastCommand never returns null (engine-verification.md §2), so Wrath's
+            // Rulebook fallback is gone. Engine veto (unit CC'd/unconscious): the unit must
+            // not act this tick; cooldown stays unstamped, retry next tick.
             var command = UnitUseAbility.CreateCastCommand(ability, targetWrapper);
-            if (command != null) {
-                issuedCommand = RunVerified(owner, command);
-                // Engine veto (unit CC'd/unconscious): no Rulebook fallback — the unit
-                // must not act at all this tick. Cooldown stays unstamped; retry next tick.
-                if (issuedCommand == null) return false;
-                string tgtDesc = target.IsPoint
-                    ? $"point({target.Point.Value.x:F1},{target.Point.Value.z:F1})"
-                    : (target.Unit?.CharacterName ?? "self");
-                Log.Engine.Debug($"Queued spell {ability.Name} on {owner.CharacterName} -> {tgtDesc}");
-                return true;
-            }
-
-            try {
-                Rulebook.Trigger<RuleCastSpell>(new RuleCastSpell(ability, targetWrapper));
-                Log.Engine.Debug($"Rulebook-triggered {ability.Name} on {owner.CharacterName} (no animation)");
-                return true;
-            } catch (Exception ex) {
-                Log.Engine.Error(ex, $"Rulebook.Trigger fallback failed for {ability.Name}");
-                return false;
-            }
+            issuedCommand = RunVerified(owner, command);
+            if (issuedCommand == null) return false;
+            string castDesc = target.IsPoint
+                ? $"point({target.Point.Value.x:F1},{target.Point.Value.z:F1})"
+                : (target.Unit?.CharacterName ?? "self");
+            Log.Engine.Debug($"Queued spell {ability.Name} on {owner.CharacterName} -> {castDesc}");
+            return true;
         }
 
         /// <summary>
@@ -209,18 +213,18 @@ namespace KingmakerTactics.Engine {
 
             var targetWrapper = BuildTargetWrapper(target, owner);
 
-            // Inventory-backed potion/scroll: synthesized AbilityData (no SourceItem). Same
-            // silent-drop caveat as ExecuteHeal's inventory branch — CreateCastCommand rejects
-            // synthetic ability data, so trigger the rule and consume the stack explicitly.
+            // Inventory-backed potion/scroll: Kingmaker's native ItemEntity.TryUseFromInventory
+            // (item caster level, charge spend, cleanup — engine-verification.md §7).
             if (inventorySource != null) {
                 try {
-                    Rulebook.Trigger(new RuleCastSpell(ability, targetWrapper));
-                    var usable = inventorySource.Blueprint as BlueprintItemEquipmentUsable;
-                    if (usable != null) ConsumeInventoryItem(inventorySource, usable, owner);
+                    if (!inventorySource.TryUseFromInventory(owner, targetWrapper)) {
+                        Log.Engine.Warn($"UseItem: TryUseFromInventory refused {inventorySource.Blueprint.name} for {owner.CharacterName}");
+                        return false;
+                    }
                     Log.Engine.Info($"UseItem (inventory): {inventorySource.Blueprint.name} on {owner.CharacterName}");
                     return true;
                 } catch (Exception ex) {
-                    Log.Engine.Error(ex, $"UseItem inventory trigger failed for {inventorySource.Blueprint.name}");
+                    Log.Engine.Error(ex, $"UseItem TryUseFromInventory failed for {inventorySource.Blueprint.name}");
                     return false;
                 }
             }
@@ -280,55 +284,28 @@ namespace KingmakerTactics.Engine {
                 ? new TargetWrapper(target)
                 : new TargetWrapper(owner);
 
-            // Inventory potions/scrolls: synthesized AbilityData (no SourceItem). CreateCastCommand
-            // drops these silently. Trigger the rule and consume the stack explicitly — otherwise
-            // the game's internal potion-use flow fires too, producing a duplicate floating tooltip.
+            // Inventory potions/scrolls: Kingmaker's native ItemEntity.TryUseFromInventory
+            // (item caster level, charge spend, cleanup — engine-verification.md §7).
             if (inventorySource != null) {
                 try {
-                    Rulebook.Trigger(new RuleCastSpell(ability, targetWrapper));
-                    var usable = inventorySource.Blueprint as BlueprintItemEquipmentUsable;
-                    if (usable != null) ConsumeInventoryItem(inventorySource, usable, owner);
+                    if (!inventorySource.TryUseFromInventory(owner, targetWrapper)) {
+                        Log.Engine.Warn($"Heal: TryUseFromInventory refused {inventorySource.Blueprint.name} for {owner.CharacterName}");
+                        return false;
+                    }
                     Log.Engine.Info($"Heal (inventory): {inventorySource.Blueprint.name} on {owner.CharacterName} -> {target?.CharacterName ?? "self"}");
                     return true;
                 } catch (Exception ex) {
-                    Log.Engine.Error(ex, $"Heal inventory trigger failed for {inventorySource.Blueprint.name}");
+                    Log.Engine.Error(ex, $"Heal TryUseFromInventory failed for {inventorySource.Blueprint.name}");
                     return false;
                 }
             }
 
             // Spellbook spell, class ability, or quickslot wand — animated cast path.
             var command = UnitUseAbility.CreateCastCommand(ability, targetWrapper);
-            if (command != null) {
-                issuedCommand = RunVerified(owner, command);
-                if (issuedCommand == null) return false;
-                Log.Engine.Info($"Heal (animated): {ability.Name} on {owner.CharacterName} -> {target?.CharacterName ?? "self"}");
-                return true;
-            }
-
-            try {
-                Rulebook.Trigger(new RuleCastSpell(ability, targetWrapper));
-                Log.Engine.Info($"Heal (rulebook fallback): {ability.Name} on {owner.CharacterName} -> {target?.CharacterName ?? "self"}");
-                return true;
-            } catch (Exception ex) {
-                Log.Engine.Error(ex, $"Heal Rulebook.Trigger failed for {ability.Name}");
-                return false;
-            }
-        }
-
-        // Delegates to the engine's ItemEntity.SpendCharges(UnitDescriptor) — the same method
-        // AbilityData.Spend() invokes on Path A (UnitUseAbility.CreateCastCommand). Handles all
-        // three item types uniformly: Wand → Charges-- then Remove when depleted (unless the
-        // blueprint has RestoreChargesOnRest); Potion/Scroll → DecrementCount(1) + Remove when
-        // the stack hits 0. Also respects IsSpendCharges (free-use items), TricksterUMD unlimited
-        // wands, HandOfMagusDan 25%-free-scroll, and stack-split semantics for multi-charge
-        // stacked items. Manual `item.Charges--` leaves a depleted wand with 0 charges stuck in
-        // inventory forever — SpendCharges cleans it up the way the engine does.
-        static void ConsumeInventoryItem(ItemEntity item, BlueprintItemEquipmentUsable usable, UnitEntityData caster) {
-            int beforeCount = item.Count;
-            int beforeCharges = item.Charges;
-            bool inCollection = item.Collection != null;
-            item.SpendCharges(caster.Descriptor);
-            Log.Engine.Debug($"Consume {item.Blueprint.name} via SpendCharges: Count {beforeCount}->{item.Count}, Charges {beforeCharges}->{item.Charges}, stillInInventory={item.Collection != null}, Type={usable.Type}");
+            issuedCommand = RunVerified(owner, command);
+            if (issuedCommand == null) return false;
+            Log.Engine.Info($"Heal (animated): {ability.Name} on {owner.CharacterName} -> {target?.CharacterName ?? "self"}");
+            return true;
         }
 
         static bool ExecuteThrowSplash(ActionDef action, UnitEntityData owner, UnitEntityData target) {
@@ -350,26 +327,25 @@ namespace KingmakerTactics.Engine {
                 return false;
             }
 
-            // CreateCastCommand silently drops synthetic AbilityData not registered on the unit.
-            // Use Rulebook.Trigger with SourceItem set, then manually consume the stack.
-            var data = new AbilityData(usable.Ability, owner.Descriptor) {
-                OverrideCasterLevel = usable.CasterLevel,
-                OverrideSpellLevel = usable.SpellLevel,
-            };
+            // Kingmaker's native inventory use: temp Ability fact with SourceItem (item caster
+            // level), instant RuleCastSpell, Spend(), cleanup (engine-verification.md §7).
             var tw = new TargetWrapper(target);
 
             try {
-                Rulebook.Trigger(new RuleCastSpell(data, tw));
-                ConsumeInventoryItem(item, usable, owner);
+                if (!item.TryUseFromInventory(owner, tw)) {
+                    Log.Engine.Warn($"ThrowSplash: TryUseFromInventory refused {item.Blueprint.name} for {owner.CharacterName}");
+                    return false;
+                }
                 Log.Engine.Info($"ThrowSplash: {owner.CharacterName} threw {item.Blueprint.name} at {target.CharacterName}");
                 return true;
             } catch (Exception ex) {
-                Log.Engine.Error(ex, $"ThrowSplash Rulebook.Trigger failed for {item.Blueprint.name}");
+                Log.Engine.Error(ex, $"ThrowSplash TryUseFromInventory failed for {item.Blueprint.name}");
                 return false;
             }
         }
 
-        // UnitSwitchHandEquipmentSet IL (ctor + OnAction): CommandType=Free, OnAction calls
+        // UnitSwitchHandEquipmentSet IL (ctor + OnAction): Kingmaker CommandType=Move
+        // (engine-verification.md §1; Wrath: Free), OnAction calls
         // unit.Body.set_CurrentHandEquipmentSetIndex(idx). It IS a real UnitCommand (queued via
         // Commands.Run), so ActiveRuleTracker can gate on it via issuedCommand. Engine respects
         // Quick Draw and reach-feat timing downstream — we don't model action economy here.
@@ -393,9 +369,10 @@ namespace KingmakerTactics.Engine {
             issuedCommand = null;
             if (!ActionValidator.TryGetMoveDestination(owner, target, out var destination, out float distance)) return false;
             // approachRadius = the bracket's outer edge: the engine stops the walk once the
-            // unit is inside it, distanceXZ so slopes do not keep it walking. Re-evaluated
-            // every tick, so a moving target is followed until the bracket holds.
-            var command = new UnitMoveTo(destination, RangeBrackets.MaxMeters(within), true);
+            // unit is inside it (Kingmaker measures XZ already — no distanceXZ flag,
+            // engine-verification.md §10). Re-evaluated every tick, so a moving target is
+            // followed until the bracket holds.
+            var command = new UnitMoveTo(destination, RangeBrackets.MaxMeters(within));
             issuedCommand = RunVerified(owner, command);
             if (issuedCommand == null) return false;
             string where = target.Unit != null ? target.Unit.CharacterName : $"point({destination.x:F1},{destination.z:F1})";
@@ -407,7 +384,8 @@ namespace KingmakerTactics.Engine {
             issuedCommand = null;
             if (target == null) return false;
 
-            var command = new UnitAttack(target, null);
+            // Same factory as a player click (handles Magus Spell Combat; engine-verification.md §10).
+            var command = UnitAttack.CreateAttackCommand(owner, target);
             issuedCommand = RunVerified(owner, command);
             if (issuedCommand == null) return false;
             Log.Engine.Info($"Queued attack on {owner.CharacterName} -> {target.CharacterName}");

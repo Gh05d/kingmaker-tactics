@@ -35,9 +35,10 @@ namespace KingmakerTactics.Engine {
                 case ActionType.ThrowSplash:
                     return UnitCommand.CommandType.Standard;
 
-                // UnitSwitchHandEquipmentSet is CommandType.Free (IL-verified).
+                // Kingmaker: UnitSwitchHandEquipmentSet is CommandType.Move (engine-verification.md §1;
+                // Wrath: Free). Run(Move) removes the paired Standard, hence the cross-slot check.
                 case ActionType.SwitchWeaponSet:
-                    return UnitCommand.CommandType.Free;
+                    return UnitCommand.CommandType.Move;
 
                 // UnitMoveTo lives in the Move slot. Not animated, but Run(Move) removes the
                 // paired Standard command, so it goes through the cross-slot check.
@@ -88,19 +89,21 @@ namespace KingmakerTactics.Engine {
 
         /// <summary>
         /// Rule types whose command must pass HasCrossSlotConflict: every animated command,
-        /// plus MoveToTarget — UnitMoveTo plays no animation, but issuing it removes an own
-        /// pending or running Standard command through the paired-slot rule.
+        /// plus the Move-slot commands MoveToTarget and (Kingmaker) SwitchWeaponSet — neither
+        /// plays a cast/attack animation, but issuing either removes an own pending or running
+        /// Standard command through the paired-slot rule.
         /// </summary>
         internal static bool NeedsCrossSlotCheck(ActionType type) {
-            return IssuesAnimatedCommand(type) || type == ActionType.MoveToTarget;
+            return IssuesAnimatedCommand(type) || type == ActionType.MoveToTarget || type == ActionType.SwitchWeaponSet;
         }
 
         /// <summary>
-        /// Engine action budget (v1.30). The engine books every acted command into
-        /// UnitCombatState.Cooldown — a standard action sets StandardAction = 6 s and
-        /// MoveAction = 3 s, a move action MoveAction += 3 s, a swift action SwiftAction = 6 s
-        /// (IL: UnitEntityData.SpendAction, RTWP branch) — and HasCooldownForCommand(type) is
-        /// its verdict on "is this action still available this round". A rule whose slot is
+        /// Engine action budget (v1.30). The engine books acted commands into
+        /// UnitCombatState.Cooldown — Kingmaker RTWP: a standard action sets
+        /// StandardAction = 6 − TimeSinceStart, free and move actions set
+        /// MoveAction = 3 − TimeSinceStart (UnitActionController.UpdateCooldowns,
+        /// engine-verification.md §1; Wrath books differently) — and HasCooldownForCommand(type)
+        /// is its verdict on "is this action still available this round". A rule whose slot is
         /// spent must not issue: the command would only buffer in its slot, and a buffered
         /// Standard blocks every Move rule through the paired-slot rule for the whole
         /// cooldown (the 1.29.x "Cackle never fires without cooldowns" report).

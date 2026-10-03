@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using KingmakerTactics.Compatibility;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.UnitLogic.Commands.Base;
 using KingmakerTactics.Models;
@@ -74,8 +75,8 @@ namespace KingmakerTactics.Engine {
         // Commands.Queue (busy unit; the engine runs it when the slot frees). A started
         // command leaves the slot only by finishing; a queued one leaves the queue by
         // being run or by the next Run() clearing the queue. So "not started AND in
-        // neither slot nor queue" reliably means "discarded" — ContainsOrQueued is the
-        // engine's own helper for exactly that question.
+        // neither slot nor queue" reliably means "discarded" — ContainsOrQueued (Wrath engine
+        // helper; Kingmaker shim, engine-verification.md §10) answers exactly that.
         static bool OccupiesSlot(UnitEntityData unit, UnitCommand cmd) {
             var commands = unit.Commands;
             return commands != null && commands.ContainsOrQueued(cmd);
