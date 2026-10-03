@@ -5,7 +5,7 @@
 - Remote: `origin`
 - Repo: `Gh05d/kingmaker-tactics`
 - Mod-Name: `Kingmaker Tactics`
-- Nexus-URL: `https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/1005` (nach Nexus-Page-Creation echten Wert einsetzen)
+- Nexus-URL: `https://www.nexusmods.com/pathfinderkingmaker/mods/<MOD_ID>` — **noch offen**: <MOD_ID> nach dem Anlegen der Nexus-Seite eintragen (auch unten in Schritt 8)
 - csproj: `KingmakerTactics/KingmakerTactics.csproj`
 - Info.json: `KingmakerTactics/Info.json`
 - Repository.json: `Repository.json`
@@ -89,7 +89,7 @@ Führe alle Checks aus, bevor du irgendetwas änderst.
    ## Requirements
 
    - [Unity Mod Manager](https://www.nexusmods.com/site/mods/21) 0.23.0+
-   - Pathfinder: Wrath of the Righteous 1.4+
+   - Pathfinder: Kingmaker – Enhanced Plus Edition 2.1.7+ (real-time combat; tactics pause in turn-based mode)
    ```
 
    Nexus-Upload wird automatisch von der GitHub Action übernommen (`.github/workflows/nexus-upload.yml`).
@@ -227,7 +227,7 @@ Nexus:  Automatisch hochgeladen via GitHub Action (Status: <success/failure>)
 
 Falls die GitHub Action fehlgeschlagen ist, zeige den manuellen Nexus-Upload-Link:
 ```
-Nexus Upload (manuell): https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/1005?tab=files
+Nexus Upload (manuell): https://www.nexusmods.com/pathfinderkingmaker/mods/<MOD_ID>?tab=files
 ZIP: KingmakerTactics/bin/KingmakerTactics-X.Y.Z.zip
 ```
 
