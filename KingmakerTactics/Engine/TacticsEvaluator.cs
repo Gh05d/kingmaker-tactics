@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kingmaker;
+using Kingmaker.Blueprints;
+using Kingmaker.UnitLogic.ActivatableAbilities;
 using Kingmaker.Controllers.Combat;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.UnitLogic.Commands;
@@ -165,11 +167,35 @@ namespace KingmakerTactics.Engine {
             // Toggle rules issue no command, so the slot budget cannot bound them. Bound them
             // per activatable instead — see the TogglesUsed check in TryExecuteRules.
             var tick = new UnitTickState();
+            HoldPendingActivationSlots(unit, tick);
 
             // TryExecuteRules now returns "stop evaluating this unit", not "something fired".
             if (TryExecuteRules(globalRules, unit, RuleListSource.Global, gameTimeSec, inCombat, globalGate, tick))
                 return;
             TryExecuteRules(charRules, unit, RuleListSource.Character, gameTimeSec, inCombat, charGate, tick);
+        }
+
+        // Kingmaker: keeps the slots of every pending ActivateWithUnitCommand activation free for
+        // this tick (see ActionSlots.HeldByPendingActivation / IsActivationPending).
+        static void HoldPendingActivationSlots(UnitEntityData unit, UnitTickState tick) {
+            var now = Game.Instance.TimeController.RealTime;
+            foreach (var activatable in unit.ActivatableAbilities.Enumerable) {
+                var bp = activatable.Blueprint;
+                if (bp == null || !activatable.IsOn || activatable.IsRunning) continue;
+                var startCommand = bp.GetComponent<ActivatableAbilityUnitCommand>();
+                float sinceOn = (float)(now - activatable.m_TurnOnTime).TotalSeconds;
+                if (startCommand == null
+                    || !ActionSlots.IsActivationPending(activatable.IsOn, activatable.IsRunning,
+                        bp.ActivateWithUnitCommand, activatable.IsAvailable, sinceOn)) {
+                    continue;
+                }
+                foreach (var held in ActionSlots.HeldByPendingActivation(startCommand.Type)) {
+                    if (!tick.SlotUsed[(int)held]) {
+                        tick.SlotUsed[(int)held] = true;
+                        Log.Engine.Trace($"{unit.CharacterName}: slot {held} held for pending activation {bp.name} ({sinceOn:F1}s)");
+                    }
+                }
+            }
         }
 
         /// <summary>Per-unit, per-tick state shared by the global and character passes.</summary>
@@ -317,6 +343,9 @@ namespace KingmakerTactics.Engine {
                     if (rule.Action.Type == ActionType.ToggleActivatable
                         && !string.IsNullOrEmpty(rule.Action.AbilityId)) {
                         tick.TogglesUsed.Add(rule.Action.AbilityId);
+                        // A just-switched-on performance waits for its start command; a Standard
+                        // rule below must not cancel it in this very tick.
+                        HoldPendingActivationSlots(unit, tick);
                     }
                     // Only gated (Standard) rules go into the tracker, so its contents keep
                     // exactly their present meaning and ActiveRuleTracker stays untouched.

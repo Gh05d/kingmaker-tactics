@@ -253,10 +253,11 @@ namespace KingmakerTactics.Engine {
                 activatable.IsOn = false;
                 Log.Engine.Info($"Toggled {activatable.Blueprint.name} OFF for {owner.CharacterName}");
             } else {
-                // IsOn setter routes through ActivatableAbility.SetIsOn, which runs
-                // CanTurnOn(), flips m_IsOn, sets m_TurnOnTime, and resolves the target
-                // wrapper if IsWaitingForTarget. Calling TryStart afterwards is redundant
-                // and asymmetric with the OFF path (single setter).
+                // Kingmaker IL: the IsOn setter only flips m_IsOn, stamps m_TurnOnTime and calls
+                // OnTurnOn — exactly what the game's own action-bar click does
+                // (MechanicActionBarSlotActivableAbility.OnClick). Starting is the engine's job;
+                // abilities with a start command (bardic performance) stay pending until it
+                // acts, and the evaluator keeps their slots free (HoldPendingActivationSlots).
                 activatable.IsOn = true;
                 Log.Engine.Info($"Toggled {activatable.Blueprint.name} ON for {owner.CharacterName}");
             }
