@@ -23,6 +23,8 @@ namespace KingmakerTactics.Engine {
 
         // Per-rule cooldown tracking: (unitId, ruleId) -> last fire game time
         static readonly Dictionary<(string, string), float> cooldowns = new Dictionary<(string, string), float>();
+        // "MATCH but action not executable": once per (unit, rule) per combat, then Trace.
+        static readonly WarnOnce notExecutableWarn = new WarnOnce();
 
         /// <summary>
         /// Evaluate on the next Update instead of waiting for the interval. Raised by
@@ -62,6 +64,7 @@ namespace KingmakerTactics.Engine {
                 wasInCombat = false;
                 PlayerCommandGuard.Reset();
                 ActiveRuleTracker.Reset();
+                notExecutableWarn.Reset();
                 Log.Engine.Info("Combat ended");
             }
 
@@ -75,6 +78,7 @@ namespace KingmakerTactics.Engine {
                 forceNextTick = true;
                 PlayerCommandGuard.Reset();
                 ActiveRuleTracker.Reset();
+                notExecutableWarn.Reset();
                 Log.Engine.Info("Combat started");
                 var partyNames = new List<string>();
                 foreach (var u in Game.Instance.Player.PartyAndPets()) {
@@ -274,8 +278,10 @@ namespace KingmakerTactics.Engine {
                             tick.WalkHold = $"Rule {i} \"{rule.Name}\" ({source})";
                         }
                         Log.Engine.Trace($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): move not needed or not possible");
+                    } else if (notExecutableWarn.ShouldWarn(unit.UniqueId, entry.Id)) {
+                        Log.Engine.Warn($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable (further repeats this combat: trace only)");
                     } else {
-                        Log.Engine.Warn($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable");
+                        Log.Engine.Trace($"{unit.CharacterName} Rule {i} \"{rule.Name}\" ({source}): MATCH but action not executable");
                     }
                     continue;
                 }
@@ -541,6 +547,7 @@ namespace KingmakerTactics.Engine {
             tickCounter = 0;
             cooldowns.Clear();
             issued.Clear();
+            notExecutableWarn.Reset();
             lastReactiveTickTime = 0;
             ActiveRuleTracker.Reset();
         }
