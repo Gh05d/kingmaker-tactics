@@ -78,13 +78,16 @@ namespace KingmakerTactics.UI {
 
             var (go, rect) = UIHelpers.Create(BadgeName, cell);
             rect.SetAnchor(0, 0, 1, 1); // point-anchor at the cell's top-left corner
-            float size = 22f * UIHelpers.FontScale;
+            // 26 px: the 22 px Wrath size read too small on Kingmaker's ~110 px cells (deck
+            // screenshot 2026-10-03) and is hard to hit with the Steam Deck trackpad. Top-left is
+            // free: the HP bar starts below it, status icons sit top-right.
+            float size = 26f * UIHelpers.FontScale;
             rect.sizeDelta = new Vector2(size, size);
             rect.anchoredPosition = new Vector2(size * 0.5f + 2f, -(size * 0.5f + 2f));
             go.transform.SetAsLastSibling(); // draw above the portrait frame
 
             UIHelpers.AddBackground(go, Theme.DimBackdrop);
-            var label = Widgets.BandLabel(go, "T", 14f, TextAlignmentOptions.Midline);
+            var label = Widgets.BandLabel(go, "T", 18f, TextAlignmentOptions.Midline);
 
             var badge = go.AddComponent<PortraitToggleBadge>();
             badge.Init(unit, label);
