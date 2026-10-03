@@ -78,15 +78,19 @@ namespace KingmakerTactics.Engine {
         }
 
         /// <summary>
-        /// An activatable with a start command holds its slots while it is on and either running
-        /// or still able to start: available and switched on less than one round (6 s) ago. The
-        /// time cap keeps an activation the engine never starts from blocking the unit's other
-        /// rules for the rest of the fight.
+        /// Whether a switched-on activatable must keep slots free this tick.
+        /// Pending (on, not running): when it starts through a unit command — ActivateWithUnitCommand
+        /// queues a UnitActivateAbility, and a command that interrupts it before it acted makes
+        /// HandleUnitCommandDidEnd switch the activatable off (deck trace 2026-10-03 16:27) — and
+        /// only while it can still start (available, switched on less than one round ago).
+        /// Running: only with an ActivatableAbilityUnitCommand component, whose same-type commands
+        /// end it via HandleUnitRunCommand; a running Inspire Courage (no component) survives attacks.
         /// </summary>
         internal static bool IsActivationHolding(bool isOn, bool isRunning, bool hasStartCommand,
-            bool isAvailable, float secondsSinceTurnOn) {
-            if (!isOn || !hasStartCommand) return false;
-            return isRunning || (isAvailable && secondsSinceTurnOn < 6f);
+            bool activateWithCommand, bool isAvailable, float secondsSinceTurnOn) {
+            if (!isOn) return false;
+            if (isRunning) return hasStartCommand;
+            return (activateWithCommand || hasStartCommand) && isAvailable && secondsSinceTurnOn < 6f;
         }
 
         /// <summary>

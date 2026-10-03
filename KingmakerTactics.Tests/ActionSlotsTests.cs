@@ -94,17 +94,23 @@ namespace KingmakerTactics.Tests {
             Assert.Equal(expected, ActionSlots.HeldByActivation(activation, running));
         }
 
+        // Deck trace 2026-10-03 16:27 (ActivatableDiag): Inspire Courage has ActivateWithUnitCommand
+        // but no ActivatableAbilityUnitCommand component. Turning it on queues a UnitActivateAbility;
+        // a Standard command issued before that acted interrupts it and HandleUnitCommandDidEnd
+        // switches the performance off. Once running, attacks no longer end it.
         [Theory]
-        [InlineData(true, false, true, true, 1f, true)]    // switched on, waiting for its command
-        [InlineData(true, true, true, true, 1f, true)]     // running — any same-type command would end it
-        [InlineData(true, true, true, false, 30f, true)]   // running long after turn-on: still protected
-        [InlineData(false, false, true, true, 1f, false)]  // off
-        [InlineData(true, false, false, true, 1f, false)]  // no start command (e.g. Power Attack)
-        [InlineData(true, false, true, false, 1f, false)]  // pending but unavailable — the engine will never start it
-        [InlineData(true, false, true, true, 7f, false)]   // pending longer than a round — stop holding
-        public void activation_holds_while_on_and_either_running_or_still_able_to_start(bool isOn, bool isRunning, bool hasStartCommand,
-                bool isAvailable, float secondsSinceTurnOn, bool expected) {
-            Assert.Equal(expected, ActionSlots.IsActivationHolding(isOn, isRunning, hasStartCommand, isAvailable, secondsSinceTurnOn));
+        //          isOn   running startCmd actWithCmd available since  expected
+        [InlineData(true,  false,  false,   true,      true,     1f,    true)]   // Inspire Courage, pending
+        [InlineData(true,  true,   false,   true,      true,     1f,    false)]  // Inspire Courage, running: attacks are fine
+        [InlineData(true,  false,  true,    false,     true,     1f,    true)]   // start-command component, pending
+        [InlineData(true,  true,   true,    false,     true,     30f,   true)]   // start-command component, running (HandleUnitRunCommand)
+        [InlineData(false, false,  true,    true,      true,     1f,    false)]  // off
+        [InlineData(true,  false,  false,   false,     true,     1f,    false)]  // plain toggle (Power Attack)
+        [InlineData(true,  false,  false,   true,      false,    1f,    false)]  // pending but unavailable — never starts
+        [InlineData(true,  false,  false,   true,      true,     7f,    false)]  // pending longer than a round — stop holding
+        public void activation_holds_while_pending_or_while_running_with_a_start_command(bool isOn, bool isRunning, bool hasStartCommand,
+                bool activateWithCommand, bool isAvailable, float secondsSinceTurnOn, bool expected) {
+            Assert.Equal(expected, ActionSlots.IsActivationHolding(isOn, isRunning, hasStartCommand, activateWithCommand, isAvailable, secondsSinceTurnOn));
         }
 
         // --- IssuesAnimatedCommand -------------------------------------------------------

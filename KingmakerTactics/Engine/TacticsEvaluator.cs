@@ -175,10 +175,10 @@ namespace KingmakerTactics.Engine {
             TryExecuteRules(charRules, unit, RuleListSource.Character, gameTimeSec, inCombat, charGate, tick);
         }
 
-        // Kingmaker: keeps the slots of every on/pending activatable with a start command free for
-        // this tick, so a lower rule cannot switch a bardic performance off (see
-        // ActionSlots.HeldByActivation / IsActivationHolding). Policy: a performance that is on
-        // wins over every rule that would end it.
+        // Kingmaker: keeps slots free while a switched-on activatable can still be ended by our
+        // own commands (see ActionSlots.IsActivationHolding). The slot comes from the pending
+        // UnitActivateAbility itself when the engine already queued it; before that, Standard
+        // (+ paired Move) is held conservatively.
         static void HoldPendingActivationSlots(UnitEntityData unit, UnitTickState tick) {
             var now = Game.Instance.TimeController.RealTime;
             foreach (var activatable in unit.ActivatableAbilities.Enumerable) {
@@ -187,16 +187,28 @@ namespace KingmakerTactics.Engine {
                 var startCommand = bp.GetComponent<ActivatableAbilityUnitCommand>();
                 float sinceOn = (float)(now - activatable.m_TurnOnTime).TotalSeconds;
                 if (!ActionSlots.IsActivationHolding(activatable.IsOn, activatable.IsRunning,
-                        startCommand != null, activatable.IsAvailable, sinceOn)) {
+                        startCommand != null, bp.ActivateWithUnitCommand, activatable.IsAvailable, sinceOn)) {
                     continue;
                 }
-                foreach (var held in ActionSlots.HeldByActivation(startCommand.Type, activatable.IsRunning)) {
+                var type = activatable.IsRunning
+                    ? startCommand.Type
+                    : PendingActivationType(unit, activatable) ?? startCommand?.Type ?? UnitCommand.CommandType.Standard;
+                foreach (var held in ActionSlots.HeldByActivation(type, activatable.IsRunning)) {
                     if (!tick.SlotUsed[(int)held]) {
                         tick.SlotUsed[(int)held] = true;
                         Log.Engine.Trace($"{unit.CharacterName}: slot {held} held for activatable {bp.name} (running={activatable.IsRunning}, {sinceOn:F1}s)");
                     }
                 }
             }
+        }
+
+        static UnitCommand.CommandType? PendingActivationType(UnitEntityData unit, ActivatableAbility activatable) {
+            var slots = unit.Commands?.Raw;
+            if (slots == null) return null;
+            foreach (var cmd in slots) {
+                if (cmd is UnitActivateAbility activate && activate.Ability == activatable && !cmd.IsFinished) return cmd.Type;
+            }
+            return null;
         }
 
         /// <summary>Per-unit, per-tick state shared by the global and character passes.</summary>
