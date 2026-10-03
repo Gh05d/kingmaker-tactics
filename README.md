@@ -12,10 +12,10 @@ A Unity Mod Manager mod for **Pathfinder: Kingmaker** (Enhanced Plus Edition) th
 
 In real-time combat, companions follow your rules:
 
-- **Daeran** heals himself with Cure Moderate Wounds when HP drops below 50%
-- **Camellia** casts Evil Eye – AC on the highest-threat enemy with AC > 20
-- **Ember** casts Phantasmal Web when Will Save of the biggest threat is low
-- Global rule: anyone with HP < 30% drinks a healing potion
+- **Harrim** heals the ally with the lowest HP once someone drops below 35%, and channels when two or more are hurt
+- **Linzi** starts Inspire Courage and casts Hold Person on the humanoid enemy with the weakest Will save
+- **Octavia** puts up Mirror Image the moment an enemy targets her
+- Global rule: anyone below 30% HP drinks a healing potion from their quick slot
 
 You set the rules once, the mod handles the rest while you focus on positioning and the fun stuff.
 
@@ -24,10 +24,13 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 - **Priority-ordered rule list** per companion plus global rules
 - **Compound conditions** — AND within groups, OR between groups
 - **Rich condition subjects**: Self, Ally, AllyCount, Enemy, EnemyCount, EnemyBiggestThreat, EnemyLowestThreat, Combat
-- **Properties**: HP%, AC, Fortitude/Reflex/Will saves, buffs, debuffs (Evil Eye variants, curses, etc.), game conditions (Paralyzed, Stunned, ...), creature type, spell slots, combat rounds
-- **Action types**: Cast Spell, Cast Ability, Use Item, Toggle Activatable, Attack, Heal (auto-picks best available heal across spells/scrolls/potions/wands), Do Nothing
+- **Properties**: HP%, AC, Fortitude/Reflex/Will saves, buffs, debuffs (curses, poison, disease, ...), game conditions (Paralyzed, Stunned, ...), creature type, spell slots, combat rounds
+- **Action types**: Cast Spell, Cast Ability, Use Item, Toggle Activatable, Attack, Heal (auto-picks best available heal across spells/scrolls/potions/wands), Throw Splash Weapon, Move to Target, Switch Weapon Set, Do Nothing
+- **Items follow Kingmaker's rules**: in combat a character can only use items from their own **quick slots** (belt). Potions, scrolls, wands and flasks lying in the shared inventory are used out of combat only — put what a companion should use mid-fight into their quick slots.
 - **Target selectors**: Self, Ally with lowest HP, Enemy with highest AC / biggest threat / specific creature type, or the specific entity that matched the condition
-- **Ability variants supported** — Evil Eye – AC / Evil Eye – Attack / Channel Positive Energy – Damage Undead, etc., with full cast animations
+- **Spell variants and conversions** — spontaneous cures, Channel Positive Energy – Damage Undead, etc., cast with full animations like from the action bar
+- **Six ready-made role packs** (Frontline, Healer, Bard, Arcane Caster, Archer, Skirmisher) — see [Default role packs](#default-role-packs)
+- **Portrait badges** — a small **T** on each party portrait toggles tactics for that character (green = on, grey/struck through = off); can be hidden in the UMM settings
 - **Buff Bot compatible** — Buff Bot handles your buff routines, Kingmaker Tactics handles in-combat reactions. If you enable Buff Bot's *cast buffs on combat start*, give your tactics buff rules a "missing buff" condition (or drop them), otherwise both mods cast the same buff and the slot is spent twice.
 - **Per-session debug logging** to its own file (`Mods/KingmakerTactics/Logs/kingmaker-tactics-YYYY-MM-DD-HHmmss.log`) with levels (Trace/Debug/Info/Warn/Error) and categories (Engine/UI/Persistence/Compat/Game)
 
@@ -40,7 +43,7 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 
 ## Usage
 
-1. Click the **helmet-with-gear button** next to the in-game HUD buttons (bottom edge of screen), or press **Ctrl+T**
+1. Click the **helmet button** in the bottom-left corner of the screen, or press **Ctrl+T**
 2. Select a tab:
    - **Global** — rules that apply to every party member
    - **\<Character name\>** — rules specific to one companion
@@ -49,7 +52,7 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 3. Click **+ New Rule**, configure conditions and action, arrange priority with the ↑/↓ buttons
 4. Start combat — the mod evaluates rules every ~3 seconds (configurable). Rules only run **in combat** unless you explicitly opt them in for out-of-combat use — see [Out-of-combat rules](#out-of-combat-rules)
 
-### Example: a "healer bot" rule set for Daeran
+### Example: a "healer bot" rule set for Harrim
 
 | Rule | IF | THEN |
 |---|---|---|
@@ -57,6 +60,21 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 | 2. Revive dead allies | AllyCount `>= 1` with IsDead | Cast Spell → Breath of Life on condition target |
 | 3. Mass heal | AllyCount `>= 3` with HpPercent < 60 | Cast Spell → Mass Cure Light Wounds on Self |
 | 4. Keep Bless up | Self missing buff "Bless" | Cast Spell → Bless on Self |
+
+### Default role packs
+
+On first start the mod adds six packs to the **Packs** tab — apply one with **+ Apply Pack** and the companion has a sensible game plan right away. Rules a character cannot perform (no rage, spell not known yet) are skipped, so a pack that only roughly fits is harmless; edit or delete anything you don't like, the mod never re-adds a default you removed.
+
+| Pack | Game plan (in priority order) |
+|---|---|
+| **Frontline** (Valerie, Amiri, Regongar) | Rage with 2+ enemies or a strong one · Power Attack · Smite Evil on a strong evil enemy · finish an adjacent enemy below 25% · intercept enemies attacking an ally |
+| **Healer** (Harrim, Tristian) | Heal an ally below 35% (strongest) · Channel when 2+ allies are hurt · Remove Paralysis · top-up heal below 60% (weakest) · Remove Fear · Lesser Restoration · Prayer / Bless at combat start · Shield of Faith on an attacked ally |
+| **Bard** (Linzi) | Inspire Courage · Haste at combat start (3+ enemies) · Hold Person on humanoids · Hideous Laughter · Slow on the densest group · Heroism on an attacked ally |
+| **Arcane Caster** (Octavia, Kalikke, Kanerah) | Mage Armor · Haste · Mirror Image when attacked · Hold Person · Slow · Fireball / Lightning Bolt (**off by default** — the mod can't see your own melee in the blast) · damage spell down to cantrips |
+| **Archer** (Ekundayo) | Rapid Shot and Deadly Aim with a bow in hand · shoot the weakest enemy below 30% · enemy archers · enemies attacking an ally |
+| **Skirmisher** (Nok-Nok, Jaethal) | Coup de grace on sleeping/paralyzed enemies · attack flanked enemies · finish enemies below 30% · flank the enemy an ally fights |
+
+Only the Healer pack heals other characters. Self-healing is best kept as one **Global** rule (the default *Emergency Self-Heal* does exactly that).
 
 ### Rule Packs
 
@@ -143,7 +161,7 @@ Takes the **save DC of the spell this rule will cast** (your live caster DC, wit
 DC − Save = margin
 ```
 
-A **positive** margin means the enemy is *likely to fail* the save; negative means they'll probably make it. Use it to fire save-or-die / save-or-suck spells only at worthwhile targets, e.g. *cast Phantasmal Killer if Enemy DC − Save ≥ 0*. It only produces a value for spells that actually force a saving throw — spells with no save (Magic Missile) and non-save effects like Demoralize can't be measured this way.
+A **positive** margin means the enemy is *likely to fail* the save; negative means they'll probably make it. Use it to fire save-or-die / save-or-suck spells only at worthwhile targets, e.g. *cast Hold Person if Enemy DC − Save ≥ 0*. It only produces a value for spells that actually force a saving throw — spells with no save (Magic Missile) and non-save effects like Demoralize can't be measured this way.
 
 ### Hit Margin (AB − AC)
 
