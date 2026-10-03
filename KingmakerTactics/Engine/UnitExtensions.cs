@@ -4,25 +4,21 @@ using Kingmaker.EntitySystem.Stats;
 
 namespace KingmakerTactics.Engine {
     public static class UnitExtensions {
-        // HD matches the game's own ContextConditionHitDice check (IL-verified):
+        // HD matches the game's own ContextConditionHitDice check (IL-verified in Wrath):
         // reads UnitProgressionData.CharacterLevel. Racial HD is already folded
-        // into CharacterLevel for monsters. Mythic levels are NOT included,
-        // matching vanilla HD-gated spells (Sleep, Color Spray, Hold Person).
+        // into CharacterLevel for monsters (HD-gated spells: Sleep, Color Spray, Hold Person).
         public static int GetHD(UnitEntityData unit) {
             var progression = unit?.Descriptor?.Progression;
             return progression?.CharacterLevel ?? 0;
         }
 
-        // Effective HD = CharacterLevel + MythicLevel. Used by margin-vs-party-level
-        // comparisons (EnemyHDMinusPartyLevel) so Mythic-buffed parties evaluate
-        // consistently against Mythic enemies. Distinct from GetHD() which deliberately
-        // excludes Mythic to mirror the engine's vanilla HD-cap rules (Sleep, Color
-        // Spray, Hold Person via ContextConditionHitDice) — those caps must NOT
-        // include Mythic. Don't unify the two helpers.
+        // Effective HD for margin-vs-party-level comparisons (EnemyHDMinusPartyLevel).
+        // Kingmaker has no mythic levels, so this equals GetHD(); kept as a separate
+        // helper so call sites stay aligned with Wrath Tactics.
         public static int GetEffectiveHD(UnitEntityData unit) {
             var p = unit?.Descriptor?.Progression;
             if (p == null) return 0;
-            return p.CharacterLevel + p.MythicLevel;
+            return p.CharacterLevel;
         }
 
         // Looks up the target's modified save for the given save type. Returns 0
@@ -40,7 +36,7 @@ namespace KingmakerTactics.Engine {
 
         // Matches a subject unit against a HasClass condition value.
         // Value format: "group:<spellcaster|arcane|divine|martial>" or "class:<InternalName>".
-        // Groups resolve via blueprint flags (IsArcaneCaster/IsDivineCaster/IsMythic) or
+        // Groups resolve via blueprint flags (IsArcaneCaster/IsDivineCaster) or
         // the presence of any Spellbook. Specific classes match the unit's Progression.Classes
         // list against the stripped blueprint name.
         public static bool MatchesClassValue(UnitEntityData unit, string value) {
@@ -60,8 +56,7 @@ namespace KingmakerTactics.Engine {
                     case "martial":
                         return classes.Any(c => c?.CharacterClass != null
                             && !c.CharacterClass.IsArcaneCaster
-                            && !c.CharacterClass.IsDivineCaster
-                            && !c.CharacterClass.IsMythic);
+                            && !c.CharacterClass.IsDivineCaster);
                     default:
                         return false;
                 }

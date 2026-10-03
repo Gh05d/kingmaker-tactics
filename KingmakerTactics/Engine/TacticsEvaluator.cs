@@ -95,7 +95,6 @@ namespace KingmakerTactics.Engine {
             }
             Log.Engine.Trace($"Tick #{tickCounter} gameTime={gameTimeSec:F1}s inCombat={inCombat} evaluable={evaluableUnits}");
 
-            if (BubbleBuffsCompat.IsExecuting()) return;
 
             foreach (var unit in Game.Instance.Player.PartyAndPets) {
                 if (!unit.IsInGame || unit.HPLeft <= 0) continue;

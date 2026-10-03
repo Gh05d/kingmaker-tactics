@@ -111,10 +111,6 @@ namespace KingmakerTactics.UI {
                     case Metamagic.Extend: tag += "X"; break;
                     case Metamagic.Heighten: tag += "H"; break;
                     case Metamagic.Reach: tag += "R"; break;
-                    case Metamagic.CompletelyNormal: tag += "N"; break;
-                    case Metamagic.Persistent: tag += "P"; break;
-                    case Metamagic.Selective: tag += "S"; break;
-                    case Metamagic.Bolstered: tag += "B"; break;
                     default: tag += "?"; break;
                 }
             }
@@ -299,14 +295,10 @@ namespace KingmakerTactics.UI {
             return null;
         }
 
-        // Emits one picker entry per variant when the parent carries either
-        // AbilityVariants (Command, Plague Storm, …) or AbilityShadowSpell
-        // (Shadow Conjuration / Evocation and their Greater forms — the engine
-        // builds the variant set at runtime from SpellList × MaxSpellLevel × School,
-        // not from an m_Variants[] array). Returns true if at least one variant was
-        // emitted, false when neither component was present so the caller can fall
-        // back to a single bare entry. A spell carrying both components emits from
-        // both — no vanilla blueprint does this but the loops are independent.
+        // Emits one picker entry per variant when the parent carries AbilityVariants
+        // (Command, …). Returns true if at least one variant was emitted, false when
+        // the component is absent so the caller can fall back to a single bare entry.
+        // (Wrath's AbilityShadowSpell branch is gone: Kingmaker has no such component.)
         static bool TryEmitVariantEntries(AbilityData spell, int level, HashSet<string> seen, HashSet<string> emittedBlueprints, List<SpellEntry> result) {
             bool emitted = false;
             var tag = BuildMetamagicTag(spell);
@@ -315,21 +307,6 @@ namespace KingmakerTactics.UI {
             var variants = GetBlueprintComponent<Kingmaker.UnitLogic.Abilities.Components.AbilityVariants>(spell.Blueprint);
             if (variants != null && variants.m_Variants != null && variants.m_Variants.Length > 0) {
                 foreach (var variant in variants.Variants) {
-                    if (variant == null) continue;
-                    emittedBlueprints.Add(variant.AssetGuid.ToString());
-                    var key = MakeKey(spell, level, variant.AssetGuid.ToString());
-                    if (seen.Add(key)) {
-                        result.Add(new SpellEntry(
-                            FormatWithInternal($"[L{level}] {spell.Name}{tagSuffix}: {variant.Name}", variant),
-                            key, variant.Icon));
-                        emitted = true;
-                    }
-                }
-            }
-
-            var shadow = GetBlueprintComponent<Kingmaker.UnitLogic.Abilities.Components.AbilityShadowSpell>(spell.Blueprint);
-            if (shadow != null && shadow.SpellList?.Get() != null) {
-                foreach (var variant in shadow.GetAvailableSpells()) {
                     if (variant == null) continue;
                     emittedBlueprints.Add(variant.AssetGuid.ToString());
                     var key = MakeKey(spell, level, variant.AssetGuid.ToString());

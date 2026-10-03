@@ -19,7 +19,7 @@ namespace KingmakerTactics.Engine {
                 case ActionType.UseItem:
                 case ActionType.Heal:
                     // RuntimeActionType already folds in Quicken (Swift -> Standard once the
-                    // swift action is spent) and MythicAbilitiesAsMoveAction (Standard -> Move).
+                    // swift action is spent); Kingmaker verification: engine-verification.md §1.
                     // An unresolvable slot degrades to Standard so a classification miss
                     // behaves like the old one-action-per-tick evaluator instead of escaping
                     // the priority gate.

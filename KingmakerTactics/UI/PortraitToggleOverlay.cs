@@ -1,83 +1,8 @@
-using System.Collections.Generic;
-using Kingmaker;
-using Kingmaker.UI.MVVM._ConsoleView.Party;
-using Kingmaker.UI.MVVM._PCView.Party;
-using Kingmaker.UI.MVVM._VM.Party;
-using Owlcat.Runtime.UI.MVVM;
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
-using KingmakerTactics.Persistence;
-
 namespace KingmakerTactics.UI {
-    // Attaches PortraitToggleBadge to every party portrait cell. Discovery is
-    // component-type based (no stable name-path exists — cells are prefab
-    // clones) and throttled; per-frame work is only the cheap state refresh.
-    // Covers both the PC and the console/gamepad view tree via the shared
-    // ViewBase<PartyCharacterVM> base.
+    // Wrath's implementation hooks Owlcat's MVVM party view, which Kingmaker does not have.
+    // Rebuilt on Kingmaker's legacy UI in sub-project 2; config flag ShowPortraitToggles stays.
     public static class PortraitToggleOverlay {
-        const float DiscoveryInterval = 1f;
-        static float discoveryTimer;
-        static readonly List<PortraitToggleBadge> badges = new List<PortraitToggleBadge>();
-
-        public static void Sync(float delta) {
-            if (Game.Instance?.UI?.Canvas == null) return;
-
-            discoveryTimer -= delta;
-            if (discoveryTimer <= 0f) {
-                discoveryTimer = DiscoveryInterval;
-                Discover();
-            }
-
-            bool show = ConfigManager.Current.ShowPortraitToggles;
-            for (int i = badges.Count - 1; i >= 0; i--) {
-                var badge = badges[i];
-                if (badge == null) { badges.RemoveAt(i); continue; } // cell destroyed with area
-                badge.Refresh(show);
-            }
-        }
-
-        // Mirror of TacticsPanel.Uninstall(): badges live under GAME-owned
-        // portrait cells, so mod-unload must destroy them explicitly or they
-        // survive as clickable orphans that keep writing config.
-        public static void Cleanup() {
-            for (int i = badges.Count - 1; i >= 0; i--) {
-                if (badges[i] != null)
-                    UnityEngine.Object.Destroy(badges[i].gameObject);
-            }
-            badges.Clear();
-            discoveryTimer = 0f;
-        }
-
-        static void Discover() {
-            // FontScale is lazily refreshed by TacticsPanel.Toggle() only —
-            // badges are usually created before any panel open, so refresh
-            // here or 22f * FontScale silently multiplies by a stale 1.0.
-            UIHelpers.RefreshFontScale();
-
-            foreach (var cell in Object.FindObjectsOfType<PartyCharacterPCView>())
-                EnsureBadge(cell);
-            foreach (var cell in Object.FindObjectsOfType<PartyCharacterConsoleView>())
-                EnsureBadge(cell);
-        }
-
-        static void EnsureBadge(ViewBase<PartyCharacterVM> cell) {
-            if (cell.transform.Find("WT_PortraitToggle") != null) return;
-
-            var (go, rect) = UIHelpers.Create("WT_PortraitToggle", cell.transform);
-            rect.SetAnchor(0, 0, 1, 1); // point-anchor at the cell's top-left corner
-            float size = 22f * UIHelpers.FontScale;
-            rect.sizeDelta = new Vector2(size, size);
-            rect.anchoredPosition = new Vector2(size * 0.5f + 2f, -(size * 0.5f + 2f));
-
-            UIHelpers.AddBackground(go, Theme.DimBackdrop);
-            var label = Widgets.BandLabel(go, "T", 14f, TextAlignmentOptions.Midline);
-
-            var badge = go.AddComponent<PortraitToggleBadge>();
-            badge.Init(cell, label);
-            go.AddComponent<Button>().onClick.AddListener(badge.OnClick);
-
-            badges.Add(badge);
-        }
+        public static void Sync(float delta) { }
+        public static void Cleanup() { }
     }
 }

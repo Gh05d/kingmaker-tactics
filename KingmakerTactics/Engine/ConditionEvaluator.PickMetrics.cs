@@ -80,10 +80,7 @@ namespace KingmakerTactics.Engine {
 
             Kingmaker.EntitySystem.Stats.SavingThrowType saveType;
             string saveTypeSource;
-            if (ability.MagicHackData != null) {
-                saveType = ability.MagicHackData.SavingThrowType;
-                saveTypeSource = "MagicHackData";
-            } else {
+            {
                 var runAction = ability.Blueprint
                     .GetComponent<Kingmaker.UnitLogic.Abilities.Components.AbilityEffectRunAction>();
                 saveType = runAction?.SavingThrowType
@@ -186,8 +183,8 @@ namespace KingmakerTactics.Engine {
         }
 
         // Computes enemyEffectiveHD - partyMaxEffectiveLevel for the
-        // EnemyHDMinusPartyLevel condition property. Mythic-inclusive on both
-        // sides so the margin stays meaningful through late Wrath. Returns NaN
+        // EnemyHDMinusPartyLevel condition property (Kingmaker: plain character
+        // level on both sides, no mythic levels). Returns NaN
         // when the party is empty (theoretical — not reachable mid-combat) so
         // the row fails-closed rather than reading 0.
         static float ComputeHDMinusPartyLevel(UnitEntityData enemy) {

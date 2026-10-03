@@ -12,7 +12,7 @@ namespace KingmakerTactics.Engine {
     public static class ClassProvider {
         public struct ClassEntry {
             public string Value;   // "group:spellcaster" or "class:Wizard"
-            public string Label;   // "[Group] Spellcaster" / "Wizard" / "Lich (Mythic)"
+            public string Label;   // "[Group] Spellcaster" / "Wizard"
             public bool IsGroup;
         }
 
@@ -38,17 +38,6 @@ namespace KingmakerTactics.Engine {
                         list.Add(new ClassEntry {
                             Value = $"class:{stripped}",
                             Label = stripped,
-                        });
-                    }
-                }
-                if (root.AvailableCharacterMythics != null) {
-                    foreach (var bp in root.AvailableCharacterMythics
-                        .Where(b => b != null)
-                        .OrderBy(b => StripSuffix(b.name))) {
-                        var stripped = StripSuffix(bp.name);
-                        list.Add(new ClassEntry {
-                            Value = $"class:{stripped}",
-                            Label = $"{stripped} (Mythic)",
                         });
                     }
                 }

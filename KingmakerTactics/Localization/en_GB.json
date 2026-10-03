@@ -341,10 +341,6 @@
   "enum.metamagic.Extend": "Extend",
   "enum.metamagic.Heighten": "Heighten",
   "enum.metamagic.Reach": "Reach",
-  "enum.metamagic.Persistent": "Persistent",
-  "enum.metamagic.Selective": "Selective",
-  "enum.metamagic.Bolstered": "Bolstered",
-  "enum.metamagic.CompletelyNormal": "Completely Normal",
 
   "settings.portrait_toggles": "Show tactics on/off badges on the party portraits",
   "settings.load_save_first": "Load a save to change Kingmaker Tactics settings."

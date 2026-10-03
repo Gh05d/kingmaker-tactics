@@ -73,15 +73,11 @@ namespace KingmakerTactics.Localization {
             Metamagic.Extend,
             Metamagic.Heighten,
             Metamagic.Reach,
-            Metamagic.Persistent,
-            Metamagic.Selective,
-            Metamagic.Bolstered,
-            Metamagic.CompletelyNormal,
         };
 
         /// <summary>
         /// Dropdown labels for the CastSpell Rod selector: "(none)" first, then the
-        /// 10 metamagic types. The integer index matches RodDropdownLabels[i] →
+        /// 6 Kingmaker metamagic types. The integer index matches RodDropdownLabels[i] →
         /// (i==0 ? null : MetamagicValues[i-1]).
         /// </summary>
         public static List<string> RodDropdownLabels() {

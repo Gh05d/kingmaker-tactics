@@ -36,7 +36,7 @@ namespace KingmakerTactics.Engine {
         // "not yet computed"; once computed, the same value is reused across all
         // enemies in EvaluateEnemyBucket (AB is enemy-independent). Cleared in finally.
         static float CurrentPartyBestAB = float.NaN;
-        // Cached party-max-effective-level (CharacterLevel + MythicLevel) for the
+        // Cached party-max-effective-level (CharacterLevel; no mythic in Kingmaker) for the
         // duration of a single Evaluate call. -1 means "not yet computed"; once
         // computed, reused across all enemies in EvaluateEnemyBucket. Cleared in
         // finally. Sentinel is -1 (not 0) because 0 is a legitimate empty-party

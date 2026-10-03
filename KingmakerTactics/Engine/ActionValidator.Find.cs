@@ -15,7 +15,7 @@ namespace KingmakerTactics.Engine {
         /// Returns ability and whether it's synthetic (variant/not in owner's fact list).
         /// Synthetic abilities must use Rulebook.Trigger — CreateCastCommand silently rejects them.
         ///
-        /// Multi-spellbook units (Magus + Wizard, standalone mythic books) hold a separate copy
+        /// Multi-spellbook units (e.g. Magus + Wizard) hold a separate copy
         /// of the same spell per book. The scan prefers the first copy that is castable RIGHT NOW
         /// (HasCastableSlot) across all spellbooks that hold the spell at the key's level; only
         /// when none is castable does it fall back to the first match, so callers still get a
@@ -221,21 +221,12 @@ namespace KingmakerTactics.Engine {
             return null;
         }
 
-        // Resolves a variant-guid against either AbilityVariants (static m_Variants[]) or
-        // AbilityShadowSpell (runtime SpellList × MaxSpellLevel × School). Returns null if
-        // the parent carries neither component or the guid doesn't match a registered variant.
+        // Resolves a variant-guid against AbilityVariants. Returns null if the parent carries
+        // no such component or the guid doesn't match a registered variant.
         static BlueprintAbility FindVariantBlueprint(BlueprintAbility parent, string variantGuid) {
             var variants = GetBlueprintComponent<AbilityVariants>(parent);
             if (variants?.m_Variants != null) {
                 foreach (var variant in variants.Variants) {
-                    if (variant == null) continue;
-                    if (variant.AssetGuid.ToString() == variantGuid) return variant;
-                }
-            }
-
-            var shadow = GetBlueprintComponent<AbilityShadowSpell>(parent);
-            if (shadow != null && shadow.SpellList?.Get() != null) {
-                foreach (var variant in shadow.GetAvailableSpells()) {
                     if (variant == null) continue;
                     if (variant.AssetGuid.ToString() == variantGuid) return variant;
                 }

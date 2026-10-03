@@ -276,8 +276,8 @@ namespace KingmakerTactics.Engine {
         }
 
         static int CountAvailableSlotsAboveLevel(UnitEntityData unit, int minLevel) {
-            // Use the highest MaxSpellLevel across the unit's spellbooks. Mythic
-            // books cap at 10; hardcoding 9 silently dropped mythic level-10 slots.
+            // Use the highest MaxSpellLevel across the unit's spellbooks instead of a
+            // hardcoded 9 (inherited from Wrath, where mythic books reach level 10).
             int maxLevel = 0;
             foreach (var book in unit.Spellbooks) {
                 if (book.MaxSpellLevel > maxLevel) maxLevel = book.MaxSpellLevel;
