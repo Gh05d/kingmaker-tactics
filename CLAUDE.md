@@ -146,7 +146,7 @@ IL evidence, version history, and incident reports (Wrath era): `docs/wrath-api-
 
 ## Release Process
 
-→ parent §Release Process / §Nexus Mods. Remote is `origin`. `/release` (`.claude/commands/release.md`): bump → build → user-confirm gate → push → tag → GitHub Release → Nexus upload (auto). Mod-page: none yet — created by the user right before v1.0 (`https://www.nexusmods.com/pathfinderkingmaker/mods/<MOD_ID>`).
+→ parent §Release Process / §Nexus Mods. Remote is `origin`. `/release` (`.claude/commands/release.md`): bump → build → user-confirm gate → push → tag → GitHub Release → Nexus upload (auto). Mod-page: https://www.nexusmods.com/pathfinderkingmaker/mods/420 (file id 8075103; ids re-queryable with the manual workflow `nexus-file-ids.yml`).
 
 ## Logs
 
