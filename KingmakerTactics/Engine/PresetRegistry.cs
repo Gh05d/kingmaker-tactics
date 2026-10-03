@@ -38,19 +38,15 @@ namespace KingmakerTactics.Engine {
                 }
             }
 
-            int newSeeds = 0;
-            foreach (var preset in DefaultPresets.Build()) {
-                if (seeded.Contains(preset.Id)) continue;
-                // If ID isn't in the sentinel but the file is already on disk (upgrade from
-                // pre-sentinel version), we skip Save and just mark it seeded. One-time risk:
-                // a default the user deleted before the sentinel existed will re-seed once.
-                if (!presets.ContainsKey(preset.Id)) {
-                    PresetManager.Save(preset);
-                    presets[preset.Id] = preset;
-                    newSeeds++;
-                }
-                seeded.Add(preset.Id);
+            // Ids already on disk (upgrade from a pre-sentinel version) are only marked. One-time
+            // risk: a default the user deleted before the sentinel existed will re-seed once.
+            var defaults = DefaultPresets.Build().ToDictionary(p => p.Id, p => p);
+            var toWrite = DefaultSeeding.Plan(defaults.Keys, seeded, id => presets.ContainsKey(id));
+            foreach (var id in toWrite) {
+                PresetManager.Save(defaults[id]);
+                presets[id] = defaults[id];
             }
+            int newSeeds = toWrite.Count;
 
             try {
                 System.IO.Directory.CreateDirectory(presetDir);

@@ -18,6 +18,36 @@ namespace KingmakerTactics.Engine {
         public static void Reload() {
             packs = PackManager.LoadAll().ToDictionary(p => p.Id, p => p);
             Log.Persistence.Info($"PackRegistry loaded {packs.Count} packs");
+            SeedDefaults();
+        }
+
+        /// <summary>
+        /// Writes the DefaultPacks role packs once per install, tracked by the sentinel
+        /// {ModPath}/Packs/.seeded-defaults (same rules as PresetRegistry.SeedDefaults: user
+        /// deletions and edits are never undone; a new mod version only adds new ids).
+        /// </summary>
+        static void SeedDefaults() {
+            var sentinelPath = System.IO.Path.Combine(PackManager.PackDir, ".seeded-defaults");
+            var seeded = new HashSet<string>();
+            try {
+                if (System.IO.File.Exists(sentinelPath)) {
+                    foreach (var line in System.IO.File.ReadAllLines(sentinelPath)) {
+                        var id = line?.Trim();
+                        if (!string.IsNullOrEmpty(id)) seeded.Add(id);
+                    }
+                }
+                var defaults = DefaultPacks.Build().ToDictionary(p => p.Id, p => p);
+                var toWrite = DefaultSeeding.Plan(defaults.Keys, seeded, id => packs.ContainsKey(id));
+                foreach (var id in toWrite) {
+                    if (PackManager.Save(defaults[id])) packs[id] = defaults[id];
+                }
+                System.IO.Directory.CreateDirectory(PackManager.PackDir);
+                System.IO.File.WriteAllLines(sentinelPath, seeded);
+                if (toWrite.Count > 0) Log.Persistence.Info($"Seeded {toWrite.Count} default pack(s)");
+            } catch (Exception ex) {
+                // User-surface persistence: a seeding failure must not break pack loading.
+                Log.Persistence.Error(ex, $"Default pack seeding failed (sentinel {sentinelPath})");
+            }
         }
 
         static Dictionary<string, TacticsPack> GetPacks() {
