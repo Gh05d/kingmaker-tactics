@@ -4,7 +4,7 @@
 
 Dragon Age Origins-style companion tactics for Pathfinder: Wrath of the Righteous. UMM mod that lets players define prioritized rules per companion (and globally) that are evaluated in real-time combat and executed as actions.
 
-Shared build/deploy/Nexus/release rules: → parent `wrath-mods/CLAUDE.md` (§Common Build Setup, §Steam Deck Deployment, §Nexus Mods, §Release Process). Incident history behind the rules here: `claude-context/incidents.md`.
+Shared build/deploy/Nexus/release rules: → parent `pathfinder-mods/CLAUDE.md` (§Common Build Setup, §Steam Deck Deployment, §Nexus Mods, §Release Process). Incident history behind the rules here: `claude-context/incidents.md`.
 
 ## Build
 

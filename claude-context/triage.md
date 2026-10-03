@@ -1,6 +1,6 @@
 # Triage: Bug Reports, Logs, "Rule Didn't Fire"
 
-Recipes for diagnosing user reports and deck-side behavior. General bug-report protocol (no-log reproduction from blueprints, UMM-off test): parent `wrath-mods/CLAUDE.md` §Working Style.
+Recipes for diagnosing user reports and deck-side behavior. General bug-report protocol (no-log reproduction from blueprints, UMM-off test): parent `pathfinder-mods/CLAUDE.md` §Working Style.
 
 ## Before Diagnosing Anything
 

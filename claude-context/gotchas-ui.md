@@ -1,6 +1,6 @@
 # UI: Widgets, Unity Layout, Pickers
 
-Operative rules for `UI/` (TacticsPanel, RuleEditorWidget, ConditionRowWidget, PresetPanel, pickers, UIHelpers). Persistence routing rules (`onChanged` / `PersistEdit`) live in [`gotchas-persistence.md`](gotchas-persistence.md). Shared Unity/TMP gotchas: parent `wrath-mods/CLAUDE.md` reference (`docs/engine-api.md` §Unity UI & TMP).
+Operative rules for `UI/` (TacticsPanel, RuleEditorWidget, ConditionRowWidget, PresetPanel, pickers, UIHelpers). Persistence routing rules (`onChanged` / `PersistEdit`) live in [`gotchas-persistence.md`](gotchas-persistence.md). Shared Unity/TMP gotchas: `pathfinder-mods/wrath/CLAUDE.md` reference (`pathfinder-mods/wrath/docs/engine-api.md` §Unity UI & TMP).
 
 ## Unity Layout
 
