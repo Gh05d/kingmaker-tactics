@@ -92,6 +92,42 @@ namespace KingmakerTactics.UI {
             return component;
         }
 
+        static TMP_FontAsset italicFont;
+        static bool italicFontResolved;
+
+        /// <summary>
+        /// Makes a label italic without a TMP sub-mesh. In Kingmaker, FontStyles.Italic on the
+        /// default NexusSerif font routes the glyphs to the italic typeface ("ANTQUAI SDF")
+        /// through a TMP_SubMeshUI child, and that sub-mesh escapes RectMask2D clipping in
+        /// Kingmaker's old TMP (deck ClipDiag 2026-10-03: only italic labels spilled out of the
+        /// scrolled rule list; every italic label had exactly that sub-mesh). Using the italic
+        /// typeface as the main font keeps the glyphs in the main mesh, which clips correctly.
+        /// Falls back to FontStyles.Italic when no italic typeface is found.
+        /// </summary>
+        public static void ApplyItalic(TMP_Text tmp) {
+            var font = ResolveItalicFont(tmp.font);
+            if (font != null) {
+                tmp.font = font;
+                tmp.fontStyle &= ~FontStyles.Italic;
+            } else {
+                tmp.fontStyle |= FontStyles.Italic;
+            }
+        }
+
+        static TMP_FontAsset ResolveItalicFont(TMP_FontAsset regular) {
+            if (italicFontResolved) return italicFont;
+            italicFontResolved = true;
+            var weights = regular != null ? regular.fontWeights : null;
+            if (weights != null && weights.Length > 4) italicFont = weights[4].italicTypeface;
+            if (italicFont == null) {
+                foreach (var f in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
+                    if (f != null && f.name == "ANTQUAI SDF") { italicFont = f; break; }
+                }
+            }
+            Log.UI.Info($"Italic typeface: {(italicFont != null ? italicFont.name : "none — using FontStyles.Italic")}");
+            return italicFont;
+        }
+
         public static TextMeshProUGUI AddLabel(GameObject parent, string text, float fontSize = 20f,
             TextAlignmentOptions alignment = TextAlignmentOptions.MidlineLeft, Color? color = null) {
             var (labelObj, labelRect) = Create("Label", parent.transform);
@@ -160,7 +196,7 @@ namespace KingmakerTactics.UI {
                 phTmp.fontSize = fontSize * FontScale;
                 phTmp.alignment = TextAlignmentOptions.MidlineLeft;
                 phTmp.color = Theme.InkMuted;
-                phTmp.fontStyle = FontStyles.Italic;
+                ApplyItalic(phTmp);
                 phTmp.enableWordWrapping = false;
                 phTmp.overflowMode = TextOverflowModes.Ellipsis;
                 phTmp.raycastTarget = false;  // don't intercept clicks meant for the input

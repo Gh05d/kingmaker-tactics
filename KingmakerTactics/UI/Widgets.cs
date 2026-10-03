@@ -125,14 +125,14 @@ namespace KingmakerTactics.UI {
         public static TextMeshProUGUI InkLabel(GameObject parent, string text, float fontSize,
             TextAlignmentOptions align = TextAlignmentOptions.MidlineLeft, Color? color = null, bool italic = false) {
             var tmp = UIHelpers.AddLabel(parent, text, fontSize, align, color ?? Theme.Ink);
-            if (italic) tmp.fontStyle |= FontStyles.Italic;
+            if (italic) UIHelpers.ApplyItalic(tmp);
             return tmp;
         }
 
         public static TextMeshProUGUI BandLabel(GameObject parent, string text, float fontSize,
             TextAlignmentOptions align = TextAlignmentOptions.MidlineLeft, bool italic = false) {
             var tmp = UIHelpers.AddLabel(parent, text, Mathf.Max(14f, fontSize), align, Theme.BandText);
-            if (italic) tmp.fontStyle |= FontStyles.Italic;
+            if (italic) UIHelpers.ApplyItalic(tmp);
             tmp.outlineWidth = 0.15f;
             tmp.outlineColor = Theme.BandTextOutline;
             return tmp;
@@ -189,7 +189,7 @@ namespace KingmakerTactics.UI {
                 img.raycastTarget = false;
             }
             var tmp = UIHelpers.AddLabel(obj, text, 14f, TextAlignmentOptions.MidlineLeft, Theme.HintText);
-            tmp.fontStyle |= FontStyles.Italic;
+            UIHelpers.ApplyItalic(tmp);
             tmp.enableWordWrapping = true;
             tmp.raycastTarget = true;
             tmp.margin = new Vector4(14, 6, 14, 6);
@@ -374,7 +374,7 @@ namespace KingmakerTactics.UI {
             var tmp = UIHelpers.AddTmp<TextMeshProUGUI>(txt);
             tmp.text = text;
             tmp.fontSize = fontSize * UIHelpers.FontScale;
-            tmp.fontStyle = FontStyles.Italic;
+            UIHelpers.ApplyItalic(tmp);
             tmp.alignment = TextAlignmentOptions.MidlineLeft;
             tmp.color = onBand ? Theme.BandText : Theme.InkMuted;
             tmp.enableWordWrapping = false;
