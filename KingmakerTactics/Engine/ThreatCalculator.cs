@@ -1,4 +1,5 @@
 using Kingmaker.EntitySystem.Entities;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static class ThreatCalculator {
@@ -8,7 +9,7 @@ namespace KingmakerTactics.Engine {
             int strMod = (stats.Strength.ModifiedValue - 10) / 2;
             int dexMod = (stats.Dexterity.ModifiedValue - 10) / 2;
             int damageMod = System.Math.Max(strMod, dexMod);
-            int hd = unit.Progression.CharacterLevel;
+            int hd = unit.Progression().CharacterLevel;
             float avgDamage = hd + damageMod;
             float critFactor = 1.05f;
             return attackBonus + (avgDamage * critFactor);

@@ -12,6 +12,7 @@ using Kingmaker.UnitLogic.Abilities.Blueprints;
 using Kingmaker.UnitLogic.Abilities.Components;
 using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ActionValidator {
@@ -126,7 +127,7 @@ namespace KingmakerTactics.Engine {
             // latter covers Cleric domain Cure spells, Life-spirit Shaman heals, etc.
             // GetAvailableForCastSpellCount returns -1 for cantrips (unlimited); 0 means
             // no slot or spell-not-in-book.
-            if (wantSpell) foreach (var book in owner.Spellbooks) {
+            if (wantSpell) foreach (var book in owner.Spellbooks()) {
                 int maxLevel = book.MaxSpellLevel;
                 for (int level = 0; level <= maxLevel; level++) {
                     foreach (var spell in book.GetKnownSpells(level)) {
@@ -167,7 +168,7 @@ namespace KingmakerTactics.Engine {
 
             // Class abilities (Lay on Hands, Channel Positive Energy)
             // Must check resource availability — some abilities are per-day
-            if (wantSpell) foreach (var ability in owner.Abilities.RawFacts) {
+            if (wantSpell) foreach (var ability in owner.Abilities) {
                 if (ability.Data.SourceItem != null) continue;
                 if (!MatchesEnergy(ability.Blueprint)) continue;
 
@@ -176,7 +177,7 @@ namespace KingmakerTactics.Engine {
                 // abilities with cost-modifier facts.
                 var resource = ability.Data.Blueprint.GetComponent<AbilityResourceLogic>();
                 if (resource?.RequiredResource != null) {
-                    int available = owner.Resources.GetResourceAmount(resource.RequiredResource);
+                    int available = owner.Resources().GetResourceAmount(resource.RequiredResource);
                     int cost = resource.CalculateCost(ability.Data);
                     if (available < cost) {
                         Log.Engine.Trace($"Skipping heal ability {ability.Blueprint.name} for {owner.CharacterName}: resource {resource.RequiredResource.name}={available}/{cost}");
@@ -199,7 +200,7 @@ namespace KingmakerTactics.Engine {
             }
 
             // Item-backed abilities (wands, staves, equipped healing items)
-            if (wantSpell) foreach (var ability in owner.Abilities.RawFacts) {
+            if (wantSpell) foreach (var ability in owner.Abilities) {
                 if (ability.Data.SourceItem == null) continue;
                 if (ability.Data.SourceItem.Charges <= 0) continue;
                 if (!MatchesEnergy(ability.Blueprint)) continue;

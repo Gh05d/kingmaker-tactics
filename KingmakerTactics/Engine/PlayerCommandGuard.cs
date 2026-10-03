@@ -49,7 +49,7 @@ namespace KingmakerTactics.Engine {
             // looked healthy while the casts never landed.
             ours?.RemoveWhere(c => {
                 if (c == null) return true;
-                string what = c is UnitUseAbility ua ? (ua.Ability?.Name ?? c.GetType().Name) : c.GetType().Name;
+                string what = c is UnitUseAbility ua ? (ua.Spell?.Name ?? c.GetType().Name) : c.GetType().Name;
                 if (!c.IsFinished) {
                     // A command we issued can also disappear WITHOUT finishing: RunVerified
                     // accepts commands the engine parked in Commands.Queue, and any later
@@ -72,7 +72,7 @@ namespace KingmakerTactics.Engine {
 
             var std = unit.Commands.Standard;
             if (IsForeignCast(unit, std, ours)) {
-                Log.Engine.Trace($"  Foreign cast detected on {unit.CharacterName}: {((UnitUseAbility)std).Ability?.Blueprint?.name ?? std.GetType().Name}");
+                Log.Engine.Trace($"  Foreign cast detected on {unit.CharacterName}: {((UnitUseAbility)std).Spell?.Blueprint?.name ?? std.GetType().Name}");
                 return true;
             }
             // A player click that arrives while the unit is busy (running cast, or an
@@ -94,7 +94,7 @@ namespace KingmakerTactics.Engine {
             if (queue != null && queue.Count > 0) {
                 foreach (var queued in queue) {
                     if (IsForeignCast(unit, queued, ours)) {
-                        Log.Engine.Trace($"  Foreign queued cast detected on {unit.CharacterName}: {((UnitUseAbility)queued).Ability?.Blueprint?.name ?? queued.GetType().Name}");
+                        Log.Engine.Trace($"  Foreign queued cast detected on {unit.CharacterName}: {((UnitUseAbility)queued).Spell?.Blueprint?.name ?? queued.GetType().Name}");
                         return true;
                     }
                 }

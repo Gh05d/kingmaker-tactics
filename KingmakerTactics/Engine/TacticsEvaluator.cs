@@ -74,7 +74,7 @@ namespace KingmakerTactics.Engine {
                 ActiveRuleTracker.Reset();
                 Log.Engine.Info("Combat started");
                 var partyNames = new List<string>();
-                foreach (var u in Game.Instance.Player.PartyAndPets) {
+                foreach (var u in Game.Instance.Player.PartyAndPets()) {
                     partyNames.Add($"{u.CharacterName}({u.UniqueId}) inGame={u.IsInGame}");
                 }
                 Log.Engine.Info($"Combat party: {string.Join(", ", partyNames)}");
@@ -90,13 +90,13 @@ namespace KingmakerTactics.Engine {
 
             tickCounter++;
             int evaluableUnits = 0;
-            foreach (var u in Game.Instance.Player.PartyAndPets) {
+            foreach (var u in Game.Instance.Player.PartyAndPets()) {
                 if (u.IsInGame && u.HPLeft > 0) evaluableUnits++;
             }
             Log.Engine.Trace($"Tick #{tickCounter} gameTime={gameTimeSec:F1}s inCombat={inCombat} evaluable={evaluableUnits}");
 
 
-            foreach (var unit in Game.Instance.Player.PartyAndPets) {
+            foreach (var unit in Game.Instance.Player.PartyAndPets()) {
                 if (!unit.IsInGame || unit.HPLeft <= 0) continue;
                 if (!config.IsEnabled(unit.UniqueId)) continue;
                 EvaluateUnit(unit, config, gameTimeSec, inCombat);
@@ -433,7 +433,7 @@ namespace KingmakerTactics.Engine {
             if (queue != null && queue.Count > 0) {
                 foreach (var queued in queue) {
                     if (queued == null || !PlayerCommandGuard.IsOurs(unit, queued)) continue;
-                    string queuedWhat = queued is UnitUseAbility qa ? (qa.Ability?.Name ?? "ability") : "attack";
+                    string queuedWhat = queued is UnitUseAbility qa ? (qa.Spell?.Name ?? "ability") : "attack";
                     reason = $"own {queuedWhat} queued in {queued.Type} (any new command would clear the queue)";
                     return true;
                 }
@@ -456,7 +456,7 @@ namespace KingmakerTactics.Engine {
                 bool own = PlayerCommandGuard.IsOurs(unit, cmd);
                 bool isCast = cmd is UnitUseAbility;
                 var verdict = ActionSlots.CheckConflict(issuing, occupied, cmd.IsStarted, approaching, own, isCast, issuingOnCooldown, standardRemaining);
-                string what = (own ? "own " : "foreign ") + (cmd is UnitUseAbility ua ? (ua.Ability?.Name ?? "ability") : "attack");
+                string what = (own ? "own " : "foreign ") + (cmd is UnitUseAbility ua ? (ua.Spell?.Name ?? "ability") : "attack");
                 switch (verdict) {
                     case SlotConflict.Running:
                         reason = $"{what} running in {occupied}";

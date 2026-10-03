@@ -1,7 +1,9 @@
+using Kingmaker.Blueprints;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.UnitLogic;
 using KingmakerTactics.Logging;
 using KmAlignment = Kingmaker.Enums.Alignment;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ConditionEvaluator {
@@ -92,7 +94,8 @@ namespace KingmakerTactics.Engine {
                 }
             }
 
-            foreach (var fact in unit.Descriptor.Facts.List) {
+            // KM has no Descriptor.Facts aggregate; features are scanned above, buffs here.
+            foreach (var fact in unit.Descriptor.Buffs) {
                 var bp = fact?.Blueprint;
                 if (bp == null) continue;
                 if (IsCreatureTypeFactMatch(target, bp.name?.ToLowerInvariant() ?? "", bp.AssetGuid.ToString())) {
@@ -123,7 +126,8 @@ namespace KingmakerTactics.Engine {
                 }
             }
 
-            foreach (var fact in unit.Descriptor.Facts.List) {
+            // KM has no Descriptor.Facts aggregate; features are scanned above, buffs here.
+            foreach (var fact in unit.Descriptor.Buffs) {
                 var bp = fact?.Blueprint;
                 if (bp == null) continue;
                 if (IsNonHumanoidFact(bp.name?.ToLowerInvariant() ?? "", bp.AssetGuid.ToString())) {
@@ -138,7 +142,7 @@ namespace KingmakerTactics.Engine {
 
         static bool CheckAlignment(UnitEntityData unit, string component) {
             if (string.IsNullOrEmpty(component)) return false;
-            var align = unit.Descriptor.Alignment.ValueRaw;
+            var align = unit.Descriptor.Alignment.Value;
             switch (component.ToLowerInvariant()) {
                 case "good":
                     return align == KmAlignment.LawfulGood
@@ -170,27 +174,27 @@ namespace KingmakerTactics.Engine {
 
         public static bool HasConditionByName(UnitEntityData unit, string conditionName) {
             switch (conditionName?.ToLowerInvariant()) {
-                case "paralyzed":  return unit.State.HasCondition(UnitCondition.Paralyzed);
-                case "stunned":    return unit.State.HasCondition(UnitCondition.Stunned);
-                case "frightened": return unit.State.HasCondition(UnitCondition.Frightened);
-                case "nauseated":  return unit.State.HasCondition(UnitCondition.Nauseated);
-                case "confused":   return unit.State.HasCondition(UnitCondition.Confusion);
-                case "blinded":    return unit.State.HasCondition(UnitCondition.Blindness);
-                case "prone":      return unit.State.HasCondition(UnitCondition.Prone);
-                case "entangled":  return unit.State.HasCondition(UnitCondition.Entangled);
-                case "exhausted":  return unit.State.HasCondition(UnitCondition.Exhausted);
-                case "fatigued":   return unit.State.HasCondition(UnitCondition.Fatigued);
-                case "shaken":     return unit.State.HasCondition(UnitCondition.Shaken);
-                case "sickened":   return unit.State.HasCondition(UnitCondition.Sickened);
-                case "sleeping":   return unit.State.HasCondition(UnitCondition.Sleeping);
-                case "petrified":  return unit.State.HasCondition(UnitCondition.Petrified);
-                case "slowed":     return unit.State.HasCondition(UnitCondition.Slowed);
-                case "staggered":  return unit.State.HasCondition(UnitCondition.Staggered);
-                case "dazed":      return unit.State.HasCondition(UnitCondition.Dazed);
-                case "dazzled":    return unit.State.HasCondition(UnitCondition.Dazzled);
-                case "helpless":   return unit.State.HasCondition(UnitCondition.Helpless);
-                case "cowering":   return unit.State.HasCondition(UnitCondition.Cowering);
-                case "deathdoor":  return unit.State.HasCondition(UnitCondition.DeathDoor);
+                case "paralyzed":  return unit.State().HasCondition(UnitCondition.Paralyzed);
+                case "stunned":    return unit.State().HasCondition(UnitCondition.Stunned);
+                case "frightened": return unit.State().HasCondition(UnitCondition.Frightened);
+                case "nauseated":  return unit.State().HasCondition(UnitCondition.Nauseated);
+                case "confused":   return unit.State().HasCondition(UnitCondition.Confusion);
+                case "blinded":    return unit.State().HasCondition(UnitCondition.Blindness);
+                case "prone":      return unit.State().HasCondition(UnitCondition.Prone);
+                case "entangled":  return unit.State().HasCondition(UnitCondition.Entangled);
+                case "exhausted":  return unit.State().HasCondition(UnitCondition.Exhausted);
+                case "fatigued":   return unit.State().HasCondition(UnitCondition.Fatigued);
+                case "shaken":     return unit.State().HasCondition(UnitCondition.Shaken);
+                case "sickened":   return unit.State().HasCondition(UnitCondition.Sickened);
+                case "sleeping":   return unit.State().HasCondition(UnitCondition.Sleeping);
+                case "petrified":  return unit.State().HasCondition(UnitCondition.Petrified);
+                case "slowed":     return unit.State().HasCondition(UnitCondition.Slowed);
+                case "staggered":  return unit.State().HasCondition(UnitCondition.Staggered);
+                case "dazed":      return unit.State().HasCondition(UnitCondition.Dazed);
+                case "dazzled":    return unit.State().HasCondition(UnitCondition.Dazzled);
+                case "helpless":   return unit.State().HasCondition(UnitCondition.Helpless);
+                case "cowering":   return unit.State().HasCondition(UnitCondition.Cowering);
+                case "deathdoor":  return unit.State().HasCondition(UnitCondition.DeathDoor);
                 default:           return false;
             }
         }
@@ -206,21 +210,36 @@ namespace KingmakerTactics.Engine {
                 return false;
             long wantBits = (long)want;
             if (wantBits == 0) return false;
-            foreach (var buff in unit.Buffs.RawFacts) {
-                if (((long)buff.Blueprint.SpellDescriptor & wantBits) != 0) return true;
+            foreach (var buff in unit.Buffs) {
+                // KM: descriptor lives on SpellDescriptorComponent, not on BlueprintBuff
+                var comp = buff.Blueprint.GetComponent<Kingmaker.Blueprints.Classes.Spells.SpellDescriptorComponent>();
+                if (comp != null && ((long)(Kingmaker.Blueprints.Classes.Spells.SpellDescriptor)comp.Descriptor & wantBits) != 0) return true;
             }
             return false;
         }
 
-        // Engine-authoritative energy-immunity check via UnitPartDamageReduction.IsImmune
-        // (verified IL). Covers the five castable elementals (Fire/Cold/Electricity/Acid/
-        // Sonic). False when the unit has no damage-reduction part or the energy is unknown.
+        // Kingmaker has no aggregate immunity getter (KM IL: UnitPartDamageReduction has no
+        // IsImmune), so scan the unit's features and buffs for the standard source, the
+        // AddEnergyImmunity component. Immunities granted by other components are not seen.
         internal static bool IsImmuneToEnergy(UnitEntityData unit, string energyName) {
             if (unit == null || string.IsNullOrEmpty(energyName)) return false;
             if (!System.Enum.TryParse<Kingmaker.Enums.Damage.DamageEnergyType>(energyName, out var energy))
                 return false;
-            var dr = unit.Get<Kingmaker.UnitLogic.Parts.UnitPartDamageReduction>();
-            return dr != null && dr.IsImmune(energy);
+            foreach (var feature in unit.Descriptor.Progression.Features) {
+                if (GrantsImmunity(feature.Blueprint, energy)) return true;
+            }
+            foreach (var buff in unit.Descriptor.Buffs) {
+                if (GrantsImmunity(buff.Blueprint, energy)) return true;
+            }
+            return false;
+        }
+
+        static bool GrantsImmunity(Kingmaker.Blueprints.BlueprintScriptableObject bp, Kingmaker.Enums.Damage.DamageEnergyType energy) {
+            if (bp?.ComponentsArray == null) return false;
+            foreach (var c in bp.ComponentsArray) {
+                if (c is Kingmaker.UnitLogic.FactLogic.AddEnergyImmunity imm && imm.Type == energy) return true;
+            }
+            return false;
         }
 
         // True if any of the six ability scores currently carries temporary Damage — the
@@ -262,7 +281,7 @@ namespace KingmakerTactics.Engine {
 
         static int CountAvailableSlotsAtLevel(UnitEntityData unit, int level) {
             int total = 0;
-            foreach (var book in unit.Spellbooks) {
+            foreach (var book in unit.Spellbooks()) {
                 if (book.Blueprint.Spontaneous) {
                     total += book.GetSpontaneousSlots(level);
                 } else {
@@ -279,7 +298,7 @@ namespace KingmakerTactics.Engine {
             // Use the highest MaxSpellLevel across the unit's spellbooks instead of a
             // hardcoded 9 (inherited from Wrath, where mythic books reach level 10).
             int maxLevel = 0;
-            foreach (var book in unit.Spellbooks) {
+            foreach (var book in unit.Spellbooks()) {
                 if (book.MaxSpellLevel > maxLevel) maxLevel = book.MaxSpellLevel;
             }
             int total = 0;
@@ -291,7 +310,7 @@ namespace KingmakerTactics.Engine {
 
         static bool HasResource(UnitEntityData unit, string resourceGuid) {
             if (string.IsNullOrEmpty(resourceGuid)) return false;
-            foreach (var resource in unit.Resources.PersistantResources) {
+            foreach (var resource in unit.Resources().PersistantResources) {
                 if (resource.Blueprint.AssetGuid.ToString() == resourceGuid && resource.Amount > 0)
                     return true;
             }

@@ -35,9 +35,8 @@ namespace KingmakerTactics.Engine {
         }
 
         /// <summary>
-        /// Called by <see cref="BuffPackScanner"/> when the full pack scan finishes: every
-        /// BlueprintBuff is now loaded, so a final enumeration captures the complete set,
-        /// which is then persisted for future sessions.
+        /// Called once by <see cref="BuffPackScanner"/>: enumerates every BlueprintBuff in the
+        /// resident Kingmaker library and persists the result.
         /// </summary>
         internal static void OnFullScanComplete() {
             cachedBuffs = EnumerateLoaded();
@@ -50,11 +49,10 @@ namespace KingmakerTactics.Engine {
             var results = new List<BuffEntry>();
             try {
                 int skipped = 0;
-                ResourcesLibrary.BlueprintsCache.ForEachLoaded((guid, bp) => {
-                    // bp is null for index entries not yet loaded — ForEachLoaded passes
-                    // entry.Blueprint without a null filter (verified via IL).
-                    if (!(bp is BlueprintBuff buff) || string.IsNullOrEmpty(buff.name)) return;
-                    if (IsCrusadeOnlyBuff(buff.name)) { skipped++; return; }
+                // KM: the whole library is resident; GetBlueprints<T>() enumerates it (engine-verification.md §13).
+                foreach (var buff in ResourcesLibrary.GetBlueprints<BlueprintBuff>()) {
+                    if (buff == null || string.IsNullOrEmpty(buff.name)) continue;
+                    if (IsCrusadeOnlyBuff(buff.name)) { skipped++; continue; }
                     // BlueprintBuff.Name = localized display name; .name = internal id.
                     // Fallback to the internal id when the localized string is empty
                     // (some hidden/system buffs ship without a display name).
@@ -62,9 +60,9 @@ namespace KingmakerTactics.Engine {
                     results.Add(new BuffEntry {
                         Name = localized,
                         InternalName = buff.name,
-                        Guid = guid.ToString()
+                        Guid = buff.AssetGuid
                     });
-                });
+                }
                 results.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
             } catch (Exception ex) {
                 Log.Engine.Error(ex, "BuffBlueprintProvider: failed to enumerate buff blueprints");

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,11 +27,10 @@ namespace KingmakerTactics.UI {
             var img = obj.GetComponent<Image>() ?? obj.AddComponent<Image>();
             img.raycastTarget = true;
             if (sprite != null) {
-                img.sprite = sprite;
-                img.type = Image.Type.Sliced;
                 // The brush-stroke ends are 112 px 9-slice borders; at 1× they are wider than
-                // the text padding and neighbouring bands overlap. 2× halves them on screen.
-                img.pixelsPerUnitMultiplier = 2f;
+                // the text padding and neighbouring bands overlap. Halve them on screen.
+                img.sprite = HalfBorders(sprite);
+                img.type = Image.Type.Sliced;
                 img.color = tint ?? Color.white;
             } else {
                 var flat = style == BandStyle.Blue ? Theme.BandFallbackBlue : Theme.BandFallbackMauve;
@@ -183,9 +183,8 @@ namespace KingmakerTactics.UI {
                 var (art, artRect) = UIHelpers.Create("Annotation", obj.transform);
                 artRect.FillParent();
                 var img = art.AddComponent<Image>();
-                img.sprite = ThemeProvider.HintAnnotation;
+                img.sprite = HalfBorders(ThemeProvider.HintAnnotation);   // 58+67 px vertical borders vs a 40–52 px card
                 img.type = Image.Type.Sliced;
-                img.pixelsPerUnitMultiplier = 2f;   // 58+67 px vertical borders vs a 40–52 px card
                 img.color = Color.white;
                 img.raycastTarget = false;
             }
@@ -282,7 +281,7 @@ namespace KingmakerTactics.UI {
             if (hover != null && sprite != null) {
                 btn.transition = Selectable.Transition.SpriteSwap;
                 btn.spriteState = new SpriteState {
-                    highlightedSprite = hover, pressedSprite = hover, selectedSprite = sprite, disabledSprite = sprite,
+                    highlightedSprite = hover, pressedSprite = hover, disabledSprite = sprite,
                 };
             } else {
                 ApplyColorTint(btn);
@@ -291,13 +290,28 @@ namespace KingmakerTactics.UI {
             return obj;
         }
 
+        // Unity 2018.4 (Kingmaker) has no Image.pixelsPerUnitMultiplier (added in 2019.1).
+        // Same on-screen effect: a sprite copy with doubled pixelsPerUnit renders its
+        // 9-slice borders at half size. Cached per source sprite.
+        static readonly Dictionary<Sprite, Sprite> halfBorderCache = new Dictionary<Sprite, Sprite>();
+
+        internal static Sprite HalfBorders(Sprite s) {
+            if (s == null) return null;
+            if (halfBorderCache.TryGetValue(s, out var cached) && cached != null) return cached;
+            var rect = s.packed ? s.textureRect : s.rect;
+            var pivot = new Vector2(s.pivot.x / s.rect.width, s.pivot.y / s.rect.height);
+            var copy = Sprite.Create(s.texture, rect, pivot, s.pixelsPerUnit * 2f, 0, SpriteMeshType.FullRect, s.border);
+            copy.name = s.name + "@half";
+            halfBorderCache[s] = copy;
+            return copy;
+        }
+
         public static void ApplyColorTint(Button btn) {
             btn.transition = Selectable.Transition.ColorTint;
             var c = btn.colors;
             c.normalColor = Color.white;
             c.highlightedColor = Theme.HoverTint;
             c.pressedColor = Theme.PressedTint;
-            c.selectedColor = Color.white;
             c.disabledColor = Theme.DisabledTint;
             c.fadeDuration = 0.1f;
             btn.colors = c;
@@ -565,9 +579,8 @@ namespace KingmakerTactics.UI {
             var paper = popup.AddComponent<Image>();
             paper.raycastTarget = true;
             if (ThemeProvider.PopupPaper != null) {
-                paper.sprite = ThemeProvider.PopupPaper;
+                paper.sprite = HalfBorders(ThemeProvider.PopupPaper);   // 101+89 px vertical borders vs short 2-option lists
                 paper.type = Image.Type.Sliced;
-                paper.pixelsPerUnitMultiplier = 2f;   // 101+89 px vertical borders vs short 2-option lists
                 paper.color = Color.white;
             } else {
                 paper.color = Theme.PaperFallback;

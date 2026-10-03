@@ -8,6 +8,7 @@ using Kingmaker.UnitLogic.Abilities.Components;
 using Kingmaker.Utility;
 using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ActionValidator {
@@ -111,7 +112,7 @@ namespace KingmakerTactics.Engine {
                         var required = (BlueprintScriptableObject)ability.OverrideRequiredResource
                             ?? resource.RequiredResource;
                         if (required != null) {
-                            int available = owner.Resources.GetResourceAmount(required);
+                            int available = owner.Resources().GetResourceAmount(required);
                             int cost = resource.CalculateCost(ability);
                             if (available < cost) resourceOk = false;
                         }
@@ -123,12 +124,12 @@ namespace KingmakerTactics.Engine {
                     // resource exhausted or engine-gated -> fall through to wand/scroll/potion branches (if enabled by mask)
                 }
 
-                // 2. Wand in quickslot — search owner.Abilities.RawFacts for an item-backed ability
+                // 2. Wand in quickslot — search owner.Abilities (KM: enumerates Ability) for an item-backed ability
                 // whose blueprint GUID matches the parsed rule key and that has charges remaining.
                 // If the rule key carries metamagic or a variant, skip the wand search entirely —
                 // Wrath ships no wands with either.
                 if (parsed.MetamagicMask == 0 && string.IsNullOrEmpty(parsed.VariantGuid)) {
-                    foreach (var fact in owner.Abilities.RawFacts) {
+                    foreach (var fact in owner.Abilities) {
                         var data = fact.Data;
                         if (data?.SourceItem == null) continue;
                         if (data.SourceItem.Charges <= 0) continue;
@@ -214,8 +215,8 @@ namespace KingmakerTactics.Engine {
         /// Arcanist-hybrid, and opposition-school cases uniformly.
         /// </summary>
         static bool CanCastSpellFromSpellbook(UnitEntityData owner, BlueprintAbility spell) {
-            if (spell == null || owner?.Spellbooks == null) return false;
-            foreach (var book in owner.Spellbooks) {
+            if (spell == null || owner?.Spellbooks() == null) return false;
+            foreach (var book in owner.Spellbooks()) {
                 int maxLevel = book.MaxSpellLevel;
                 for (int level = 0; level <= maxLevel; level++) {
                     foreach (var known in book.GetKnownSpells(level)) {

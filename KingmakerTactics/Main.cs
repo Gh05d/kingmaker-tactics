@@ -121,7 +121,8 @@ namespace KingmakerTactics {
             Logging.Log.Engine.Error(ex, context);
         }
 
-        class SaveLoadWatcher : IAreaHandler {
+        // Task 9: Kingmaker area hook (IAreaHandler does not exist in Kingmaker)
+        class SaveLoadWatcher {
             public void OnAreaDidLoad() {
                 Persistence.ConfigManager.Reset();
                 Engine.TacticsEvaluator.Reset();

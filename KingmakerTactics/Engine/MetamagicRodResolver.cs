@@ -23,14 +23,16 @@ namespace KingmakerTactics.Engine {
             if (unit == null || ability == null) return null;
             var part = unit.Get<UnitPartSpecialMetamagic>();
             if (part == null) return null;
-            // m_MetamagicRodMechanics is publicizer-accessible (private List<(EntityFact, MetamagicRodMechanics)>).
+            // m_MetamagicRodMechanics is publicizer-accessible. Wrath: List<(EntityFact, MetamagicRodMechanics)>;
+            // Kingmaker IL: Dictionary<Fact, MetamagicRodMechanics> — read the value.
             var entries = part.m_MetamagicRodMechanics;
             if (entries == null || entries.Count == 0) return null;
             foreach (var entry in entries) {
-                var mech = entry.Item2;
+                var mech = entry.Value;
                 if (mech == null) continue;
                 if (mech.Metamagic != metamagic) continue;
-                if (!mech.IsSuitableAbility(ability)) continue;
+                // KM IL: IsSuitableAbility(BlueprintAbility, int spellLevel, bool fromSpellbook), private (publicized)
+                if (!mech.IsSuitableAbility(ability.Blueprint, ability.SpellLevel, ability.Spellbook != null)) continue;
                 Log.Engine.Debug($"MetamagicRodResolver: matched {mech.Metamagic} rod for {ability.Name} on {unit.CharacterName}");
                 return mech;
             }

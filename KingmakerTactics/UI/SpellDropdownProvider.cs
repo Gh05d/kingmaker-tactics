@@ -7,6 +7,8 @@ using Kingmaker.EntitySystem.Entities;
 using Kingmaker.UnitLogic.Abilities;
 using UnityEngine;
 using KingmakerTactics.Localization;
+using KingmakerTactics.Compatibility;
+using KingmakerTactics.Engine;
 
 namespace KingmakerTactics.UI {
     public static class SpellDropdownProvider {
@@ -133,7 +135,7 @@ namespace KingmakerTactics.UI {
             var emittedBlueprints = new HashSet<string>();
             var conversionSources = new List<(AbilityData spell, int level)>();
 
-            foreach (var book in unit.Spellbooks) {
+            foreach (var book in unit.Spellbooks()) {
                 int maxLevel = book.MaxSpellLevel;
                 for (int level = 0; level <= maxLevel; level++) {
                     // Base known spells — expand AbilityVariants (Command, Plague Storm, …) per variant
@@ -184,13 +186,13 @@ namespace KingmakerTactics.UI {
             var conversionSources = new List<AbilityData>();
 
             // Class abilities (non-item, non-spellbook)
-            foreach (var ability in unit.Abilities.RawFacts) {
+            foreach (var ability in unit.Abilities) {
                 if (ability.Data.SourceItem != null) continue;
                 conversionSources.Add(ability.Data);
 
                 // Check for variants (sub-abilities like Evil Eye - AC)
                 var variants = GetBlueprintComponent<Kingmaker.UnitLogic.Abilities.Components.AbilityVariants>(ability.Blueprint);
-                if (variants != null && variants.m_Variants != null && variants.m_Variants.Length > 0) {
+                if (variants != null && variants.Variants != null && variants.Variants.Length > 0) {
                     // Add each variant instead of the parent
                     foreach (var variant in variants.Variants) {
                         if (variant == null) continue;
@@ -235,9 +237,8 @@ namespace KingmakerTactics.UI {
         //    only the action type differs, so the key carries ~A<actionType> and the label an
         //    " (Move)"-style suffix. Not subject to the emittedBlueprints filter — the parent
         //    is legitimately in the list already.
-        // GetConversions executes third-party conversion handlers (TTT raises an EventBus event
-        // from a Harmony postfix), so one broken mod component must not kill the whole picker:
-        // per-parent catch, warn, continue.
+        // GetConversions is the mod's Kingmaker rebuild (AbilityConversions); per-parent
+        // catch so one odd blueprint cannot kill the whole picker.
         static void EmitConversionEntries(AbilityData parent, int level, string labelPrefix,
                 HashSet<string> seen, HashSet<string> emittedBlueprints, List<SpellEntry> result) {
             List<AbilityData> conversions;
@@ -276,7 +277,7 @@ namespace KingmakerTactics.UI {
             var result = new List<SpellEntry>();
             var seen = new HashSet<string>();
 
-            foreach (var activatable in unit.ActivatableAbilities.RawFacts) {
+            foreach (var activatable in unit.ActivatableAbilities) {
                 var guid = activatable.Blueprint.AssetGuid.ToString();
                 if (seen.Add(guid))
                     result.Add(new SpellEntry(
@@ -305,7 +306,7 @@ namespace KingmakerTactics.UI {
             string tagSuffix = tag.Length > 0 ? " " + tag : "";
 
             var variants = GetBlueprintComponent<Kingmaker.UnitLogic.Abilities.Components.AbilityVariants>(spell.Blueprint);
-            if (variants != null && variants.m_Variants != null && variants.m_Variants.Length > 0) {
+            if (variants != null && variants.Variants != null && variants.Variants.Length > 0) {
                 foreach (var variant in variants.Variants) {
                     if (variant == null) continue;
                     emittedBlueprints.Add(variant.AssetGuid.ToString());
@@ -357,7 +358,7 @@ namespace KingmakerTactics.UI {
 
             // 1. Equipped item-backed abilities (wands in quickslot, staves, scrolls in quickslot).
             //    These register as facts on the unit with SourceItem set.
-            foreach (var ability in unit.Abilities.RawFacts) {
+            foreach (var ability in unit.Abilities) {
                 if (ability.Data.SourceItem == null) continue;
                 var guid = ability.Blueprint.AssetGuid.ToString();
                 if (!seen.Add(guid)) continue;

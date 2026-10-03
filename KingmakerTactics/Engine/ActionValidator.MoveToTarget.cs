@@ -4,6 +4,7 @@ using Kingmaker.UnitLogic.Commands.Base;
 using UnityEngine;
 using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ActionValidator {
@@ -45,7 +46,7 @@ namespace KingmakerTactics.Engine {
                                                  out Vector3 destination, out float distance) {
             destination = default;
             distance = 0f;
-            if (owner?.State == null || !owner.State.CanMove) return false;
+            if (owner?.State() == null || !owner.State().CanMove) return false;
             if (target.IsPoint) {
                 destination = target.Point.Value;
             } else if (target.Unit != null) {

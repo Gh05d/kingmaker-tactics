@@ -74,9 +74,9 @@ namespace KingmakerTactics.Engine {
             // treat as success but gate on the live occupant, not our dead object.
             if (command is UnitUseAbility ours) {
                 for (int i = 0; i < slots.Length; i++) {
-                    if (slots[i] is UnitUseAbility other && other.IsRunning && other.Ability == ours.Ability) {
+                    if (slots[i] is UnitUseAbility other && other.IsRunning && other.Spell == ours.Spell) {
                         PlayerCommandGuard.Track(owner, other);
-                        Log.Engine.Debug($"Commands.Run merged {ours.Ability?.Name} into running command for {owner.CharacterName} — gating on slot occupant");
+                        Log.Engine.Debug($"Commands.Run merged {ours.Spell?.Name} into running command for {owner.CharacterName} — gating on slot occupant");
                         return other;
                     }
                 }
@@ -100,7 +100,7 @@ namespace KingmakerTactics.Engine {
         }
 
         static string DescribeCommand(UnitCommand cmd) {
-            if (cmd is UnitUseAbility ua) return ua.Ability?.Name ?? "UnitUseAbility";
+            if (cmd is UnitUseAbility ua) return ua.Spell?.Name ?? "UnitUseAbility";
             return cmd.GetType().Name;
         }
 

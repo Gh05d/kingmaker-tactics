@@ -7,6 +7,7 @@ using Kingmaker.PubSubSystem;
 using Kingmaker.UnitLogic.Commands;
 using Kingmaker.UnitLogic.Commands.Base;
 using KingmakerTactics.Logging;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     /// <summary>
@@ -54,7 +55,7 @@ namespace KingmakerTactics.Engine {
         }
 
         internal static string Describe(UnitCommand command) {
-            string what = command is UnitUseAbility ua ? (ua.Ability?.Name ?? "UnitUseAbility") : command.GetType().Name;
+            string what = command is UnitUseAbility ua ? (ua.Spell?.Name ?? "UnitUseAbility") : command.GetType().Name;
             string owner = PlayerCommandGuard.IsOurs(command.Executor, command) ? "own" : "foreign";
             return $"{owner} {what} [{command.Type}]";
         }
@@ -79,7 +80,7 @@ namespace KingmakerTactics.Engine {
         // TickCommand interrupt is attributable without another deck round.
         static string State(UnitCommand cmd) {
             try {
-                var state = cmd.Executor?.State;
+                var state = cmd.Executor?.State();
                 var queue = cmd.Executor?.Commands?.Queue;
                 return $", asap={cmd.InterruptAsSoonAsPossible}, interruptible={cmd.IsInterruptible}, shouldBeInterrupted={cmd.ShouldBeInterrupted}, canAct={state?.CanAct}, canCast={state?.CanCast}, closeEnough={cmd.IsUnitCloseEnough()}, queued={queue?.Count ?? 0}, aiMark={cmd.AiCanInterruptMark}, aiAction={(cmd.AiAction != null)}";
             } catch (Exception ex) {

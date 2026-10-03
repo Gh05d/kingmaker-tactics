@@ -30,8 +30,8 @@ namespace KingmakerTactics.Engine {
 
             var root = Game.Instance?.BlueprintRoot?.Progression;
             if (root != null) {
-                if (root.AvailableCharacterClasses != null) {
-                    foreach (var bp in root.AvailableCharacterClasses
+                if (root.CharacterClasses != null) {
+                    foreach (var bp in root.CharacterClasses
                         .Where(b => b != null)
                         .OrderBy(b => StripSuffix(b.name))) {
                         var stripped = StripSuffix(bp.name);

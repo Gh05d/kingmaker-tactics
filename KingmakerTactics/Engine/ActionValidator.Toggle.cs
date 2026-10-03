@@ -16,7 +16,7 @@ namespace KingmakerTactics.Engine {
 
         public static ActivatableAbility FindActivatable(UnitEntityData owner, string abilityGuid) {
             if (string.IsNullOrEmpty(abilityGuid)) return null;
-            return owner.ActivatableAbilities.RawFacts
+            return owner.ActivatableAbilities.Enumerable
                 .FirstOrDefault(a => a.Blueprint.AssetGuid.ToString() == abilityGuid);
         }
     }

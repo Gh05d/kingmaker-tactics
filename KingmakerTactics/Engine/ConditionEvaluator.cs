@@ -12,6 +12,7 @@ using UnityEngine;
 using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
 using KmAlignment = Kingmaker.Enums.Alignment;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ConditionEvaluator {
@@ -281,7 +282,7 @@ namespace KingmakerTactics.Engine {
 
 
         static IEnumerable<UnitEntityData> GetAllPartyMembers(UnitEntityData owner) {
-            return Game.Instance.Player.PartyAndPets.Where(u => u.IsInGame);
+            return Game.Instance.Player.PartyAndPets().Where(u => u.IsInGame);
         }
 
         static IEnumerable<UnitEntityData> GetVisibleEnemies(UnitEntityData owner) {

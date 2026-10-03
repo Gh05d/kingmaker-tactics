@@ -13,7 +13,7 @@ namespace KingmakerTactics.Engine {
             ability = null;
             var found = FindUseItemSource(owner, abilityGuid, out _);
             if (found == null) return false;
-            if (!found.CanTargetPoint) return false;
+            if (!found.Blueprint.CanTargetPoint) return false;
             if (found.SourceItem != null && found.SourceItem.Charges <= 0) return false;
             if (!found.IsAvailable) {
                 Log.Engine.Trace($"CanUseItemAtPoint: {owner.CharacterName} {found.Name} engine-unavailable ({found.GetUnavailableReason()})");
@@ -44,7 +44,7 @@ namespace KingmakerTactics.Engine {
             if (string.IsNullOrEmpty(abilityGuid)) return null;
 
             // 1. Equipped item-backed ability (wand/scroll in quickslot).
-            foreach (var ability in owner.Abilities.RawFacts) {
+            foreach (var ability in owner.Abilities) {
                 if (ability.Blueprint.AssetGuid.ToString() == abilityGuid && ability.Data.SourceItem != null)
                     return ability.Data;
             }

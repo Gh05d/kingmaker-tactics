@@ -5,6 +5,7 @@ using Kingmaker.EntitySystem.Entities;
 using UnityEngine;
 using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static class TargetResolver {
@@ -236,7 +237,7 @@ namespace KingmakerTactics.Engine {
         }
 
         static IEnumerable<UnitEntityData> GetAllies(UnitEntityData owner) {
-            return Game.Instance.Player.PartyAndPets.Where(u => u.IsInGame);
+            return Game.Instance.Player.PartyAndPets().Where(u => u.IsInGame);
         }
 
         static IEnumerable<UnitEntityData> GetVisibleEnemies(UnitEntityData owner) {

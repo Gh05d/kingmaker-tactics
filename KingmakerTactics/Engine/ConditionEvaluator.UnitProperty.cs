@@ -171,11 +171,9 @@ namespace KingmakerTactics.Engine {
                 }
 
                 case ConditionProperty.IsPet: {
-                    // UnitPartPet is the engine's canonical pet marker — covers all PetType
-                    // values (AnimalCompanion / MythicSkeletalChampion / AzataHavocDragon / Clone
-                    // / NightHag) plus Eidolons. Symmetric to IsSummon for filtering pets out of
-                    // (or into) global rules.
-                    bool isPet = unit.Get<Kingmaker.UnitLogic.Parts.UnitPartPet>() != null;
+                    // Kingmaker has no UnitPartPet; UnitDescriptor.IsPet is true when the unit has a Master
+                    // (animal companions). Whether summons also get a Master is unverified (engine-verification.md §11).
+                    bool isPet = unit.Descriptor.IsPet;
                     return EqualsBool(isPet, condition);
                 }
 
@@ -369,7 +367,7 @@ namespace KingmakerTactics.Engine {
                 }
 
                 case ConditionProperty.IsPet: {
-                    bool isPet = unit.Get<Kingmaker.UnitLogic.Parts.UnitPartPet>() != null;
+                    bool isPet = unit.Descriptor.IsPet;
                     bool wantPet = ParseBoolValue(condition.Value);
                     bool match = isPet == wantPet;
                     return condition.Operator == ConditionOperator.NotEqual ? !match : match;

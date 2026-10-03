@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kingmaker;
 using Kingmaker.EntitySystem.Entities;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     /// <summary>
@@ -22,8 +23,8 @@ namespace KingmakerTactics.Engine {
 
         public static IReadOnlyList<AllyEntry> GetAll() {
             var player = Game.Instance?.Player;
-            if (player?.PartyAndPets == null) return System.Array.Empty<AllyEntry>();
-            return player.PartyAndPets
+            if (player?.PartyAndPets() == null) return System.Array.Empty<AllyEntry>();
+            return player.PartyAndPets()
                 .Where(u => u != null && u.IsInGame)
                 .Select(u => new AllyEntry {
                     UniqueId = u.UniqueId,
@@ -35,8 +36,8 @@ namespace KingmakerTactics.Engine {
         public static UnitEntityData Resolve(string uniqueId) {
             if (string.IsNullOrEmpty(uniqueId)) return null;
             var player = Game.Instance?.Player;
-            if (player?.PartyAndPets == null) return null;
-            return player.PartyAndPets.FirstOrDefault(u => u != null && u.UniqueId == uniqueId);
+            if (player?.PartyAndPets() == null) return null;
+            return player.PartyAndPets().FirstOrDefault(u => u != null && u.UniqueId == uniqueId);
         }
 
         public static string GetLabel(string uniqueId) {

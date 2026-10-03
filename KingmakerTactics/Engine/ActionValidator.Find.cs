@@ -4,6 +4,7 @@ using Kingmaker.UnitLogic.Abilities;
 using Kingmaker.UnitLogic.Abilities.Blueprints;
 using Kingmaker.UnitLogic.Abilities.Components;
 using KingmakerTactics.Logging;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ActionValidator {
@@ -84,7 +85,7 @@ namespace KingmakerTactics.Engine {
                 return null;
             }
 
-            foreach (var book in owner.Spellbooks) {
+            foreach (var book in owner.Spellbooks()) {
                 int minLvl = parsed.Level >= 0 ? parsed.Level : 0;
                 int maxLvl = parsed.Level >= 0 ? parsed.Level : book.MaxSpellLevel;
                 for (int level = minLvl; level <= maxLvl; level++) {
@@ -122,7 +123,7 @@ namespace KingmakerTactics.Engine {
             }
 
             // Non-spellbook abilities (class abilities: key is variant-guid-as-primary for legacy compatibility)
-            foreach (var ability in owner.Abilities.RawFacts) {
+            foreach (var ability in owner.Abilities) {
                 if (ability.Data.SourceItem != null) continue;
 
                 // Compound keys must NOT short-circuit to the parent: a conversion key
@@ -135,7 +136,7 @@ namespace KingmakerTactics.Engine {
 
                 // Variants: legacy keys store the variant GUID as primary; new keys use BlueprintGuid=parent + VariantGuid=variant.
                 var variants = GetBlueprintComponent<AbilityVariants>(ability.Blueprint);
-                if (variants?.m_Variants != null) {
+                if (variants?.Variants != null) {
                     foreach (var variant in variants.Variants) {
                         if (variant == null || parsed.MetamagicMask != 0) continue;
                         bool legacyMatch = string.IsNullOrEmpty(parsed.VariantGuid)
@@ -181,41 +182,30 @@ namespace KingmakerTactics.Engine {
             return ability.Spellbook.GetAvailableForCastSpellCount(forSlots) != 0 && ability.IsAvailable;
         }
 
-        // Constructs a variant AbilityData while preserving the parent's spellbook level.
-        // The 2-arg ctor `new AbilityData(parent, variant)` chains to the 4-arg base ctor
-        // and silently drops `SpellLevelInSpellbook`, so `Spellbook.GetSpellLevel(variant)`
-        // falls through to `GetMinSpellLevel(variant.Blueprint)` which returns -1 (variant
-        // blueprints aren't in m_KnownSpellLevels — only their parents are). That makes
-        // `GetAvailableForCastSpellCount` return 0 for any spellbook-spell variant, blocking
-        // the cast at the validator's slot-count gate. Class-ability variants are unaffected
-        // because their Spellbook==null branch skips the gate.
+        // Constructs a variant AbilityData. Kingmaker's copy ctor keeps the parent's metamagic
+        // and sets ConvertedFrom (KM IL: AbilityData::.ctor(AbilityData, BlueprintAbility)), so
+        // SpellLevel and the slot lookup in HasCastableSlot resolve through the parent — Wrath's
+        // SpellLevelInSpellbook workaround is not needed.
         static AbilityData MakeVariantData(AbilityData parent, BlueprintAbility variant) {
-            var data = new AbilityData(parent, variant);
-            data.SpellLevelInSpellbook = parent.SpellLevelInSpellbook;
-            return data;
+            return new AbilityData(parent, variant);
         }
 
-        // Resolves a conversion of `parent` by blueprint GUID against the engine's runtime
-        // conversion list (AbilityData.GetConversions — variants, spontaneous conversion, and
-        // third-party additions like TTT's AddSpecificSpellConversion/AbilityActionTypeConversion
-        // via their GetConversions postfix). Called as fallback after FindVariantBlueprint missed,
-        // so ordinary variants never take this path.
+        // Resolves a conversion of `parent` by blueprint GUID against the conversion list built
+        // like Kingmaker's action bar (AbilityConversions.GetConversions — spontaneous conversions
+        // and variants). Called as fallback after FindVariantBlueprint missed, so ordinary
+        // variants never take this path.
         //
         // actionType >= 0 additionally matches the conversion's action type — required for
         // same-blueprint conversions (e.g. Quick Channel's move-action channel), where the GUID
         // alone is ambiguous with the parent itself. Without the discriminator, same-blueprint
         // conversions are skipped rather than resolved arbitrarily.
         //
-        // The engine builds the conversion list fresh per call (TempList), so normalizing
-        // SpellLevelInSpellbook on the returned instance mutates nothing shared — same fix as
-        // MakeVariantData (the 2-arg AbilityData ctor drops the parent's spellbook level).
         static AbilityData FindConversion(AbilityData parent, string conversionGuid, int actionType) {
             foreach (var conv in parent.GetConversions()) {
                 if (conv?.Blueprint == null) continue;
                 if (conv.Blueprint.AssetGuid.ToString() != conversionGuid) continue;
                 if (actionType >= 0 && (int)conv.ActionType != actionType) continue;
                 if (actionType < 0 && conv.Blueprint == parent.Blueprint) continue;
-                conv.SpellLevelInSpellbook = parent.SpellLevelInSpellbook;
                 return conv;
             }
             return null;
@@ -225,7 +215,7 @@ namespace KingmakerTactics.Engine {
         // no such component or the guid doesn't match a registered variant.
         static BlueprintAbility FindVariantBlueprint(BlueprintAbility parent, string variantGuid) {
             var variants = GetBlueprintComponent<AbilityVariants>(parent);
-            if (variants?.m_Variants != null) {
+            if (variants?.Variants != null) {
                 foreach (var variant in variants.Variants) {
                     if (variant == null) continue;
                     if (variant.AssetGuid.ToString() == variantGuid) return variant;

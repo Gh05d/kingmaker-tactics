@@ -11,6 +11,7 @@ using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
 using KingmakerTactics.Persistence;
 using Object = UnityEngine.Object;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.UI {
     public class TacticsPanel : MonoBehaviour, IPartyCombatHandler {
@@ -220,8 +221,8 @@ namespace KingmakerTactics.UI {
             AddTab(tabBarTransform.gameObject, "tab.global".i18n(), null, () => SelectTab(null));
 
             // Party member + pet tabs
-            if (Game.Instance?.Player?.PartyAndPets != null) {
-                foreach (var unit in Game.Instance.Player.PartyAndPets) {
+            if (Game.Instance?.Player?.PartyAndPets() != null) {
+                foreach (var unit in Game.Instance.Player.PartyAndPets()) {
                     if (!unit.IsInGame) continue;
                     var uid = unit.UniqueId;
                     AddTab(tabBarTransform.gameObject, unit.CharacterName, uid, () => SelectTab(uid));
@@ -995,8 +996,8 @@ namespace KingmakerTactics.UI {
         }
 
         string GetCharacterName(string unitId) {
-            if (Game.Instance?.Player?.PartyAndPets == null) return unitId;
-            foreach (var unit in Game.Instance.Player.PartyAndPets) {
+            if (Game.Instance?.Player?.PartyAndPets() == null) return unitId;
+            foreach (var unit in Game.Instance.Player.PartyAndPets()) {
                 if (unit.UniqueId == unitId) return unit.CharacterName;
             }
             return unitId;

@@ -1,6 +1,7 @@
 using System.Linq;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.EntitySystem.Stats;
+using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static class UnitExtensions {
@@ -48,7 +49,7 @@ namespace KingmakerTactics.Engine {
                 var group = value.Substring(6);
                 switch (group) {
                     case "spellcaster":
-                        return unit.Spellbooks != null && unit.Spellbooks.Any();
+                        return unit.Spellbooks() != null && unit.Spellbooks().Any();
                     case "arcane":
                         return classes.Any(c => c?.CharacterClass != null && c.CharacterClass.IsArcaneCaster);
                     case "divine":

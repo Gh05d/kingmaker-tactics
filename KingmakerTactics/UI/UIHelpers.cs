@@ -1,5 +1,4 @@
 using Kingmaker;
-using Kingmaker.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,27 +14,14 @@ namespace KingmakerTactics.UI {
 
         /// <summary>
         /// Multiplier applied to every <c>fontSize</c> argument passed to <see cref="AddLabel"/>
-        /// and <see cref="CreateTMPInputField"/>. Mirrors the game's UI font scale slider
-        /// (<c>SettingsRoot.Game.Main.FontSize</c> — same source the Journal etc. multiplies
-        /// by). Refreshed on-open via <see cref="RefreshFontScale"/>; settings changes made
-        /// while the panel is open take effect on the next Ctrl+T cycle.
+        /// and <see cref="CreateTMPInputField"/>. Wrath mirrors the game's UI font-scale slider;
+        /// Kingmaker has no such setting (KM IL: no FontSize property in any settings class),
+        /// so the scale stays at <see cref="Theme.BaseScale"/>.
         /// </summary>
         public static float FontScale { get; private set; } = Theme.BaseScale;
 
         public static void RefreshFontScale() {
-            try {
-                var fontSetting = SettingsRoot.Game?.Main?.FontSize;
-                if (fontSetting != null) {
-                    float v = (float)fontSetting;
-                    // Defensive clamp — game slider never produces these, but a corrupt
-                    // settings file shouldn't render the panel unreadable.
-                    if (float.IsNaN(v) || v < 0.5f || v > 3f) v = 1f;
-                    FontScale = v * Theme.BaseScale;
-                }
-            } catch (Exception ex) {
-                Log.UI.Warn($"FontScale read failed, using 1.0: {ex.Message}");
-                FontScale = Theme.BaseScale;
-            }
+            FontScale = Theme.BaseScale;
         }
 
         public static void SetAnchor(this RectTransform transform, double xMin, double xMax, double yMin, double yMax) {

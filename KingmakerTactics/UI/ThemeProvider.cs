@@ -145,7 +145,6 @@ namespace KingmakerTactics.UI {
             btn.spriteState = new SpriteState {
                 highlightedSprite = hover,
                 pressedSprite     = pressed,
-                selectedSprite    = hover,
                 disabledSprite    = normal,
             };
             btn.targetGraphic = img;
@@ -179,7 +178,6 @@ namespace KingmakerTactics.UI {
                 btn.spriteState = new SpriteState {
                     highlightedSprite = TabHeaderActive,
                     pressedSprite     = TabHeaderActive,
-                    selectedSprite    = active ? TabHeaderActive : TabHeaderInactive,
                     disabledSprite    = TabHeaderInactive,
                 };
                 btn.targetGraphic = img;
