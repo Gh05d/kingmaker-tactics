@@ -4,7 +4,7 @@
 
 A Unity Mod Manager mod for **Pathfinder: Kingmaker** (Enhanced Plus Edition) that brings Dragon Age Origins-style tactical AI to your party. Define priority-ordered rules per companion (and globally), and the mod evaluates them every few seconds in real-time combat — automatically casting spells, using items, activating class abilities, or picking attack targets based on the conditions you set.
 
-> **Status: pre-release — not on Nexus yet.** Port of [Wrath Tactics](https://github.com/Gh05d/wrath-tactics) to Pathfinder: Kingmaker. Not yet included: per-portrait on/off badges, buff-mod integration, turn-based mode (tactics pause while turn-based combat is active).
+> **Status: pre-release — not on Nexus yet.** Port of [Wrath Tactics](https://github.com/Gh05d/wrath-tactics) to Pathfinder: Kingmaker. **Real-time combat only** — tactics pause while turn-based combat is active.
 
 ---
 
