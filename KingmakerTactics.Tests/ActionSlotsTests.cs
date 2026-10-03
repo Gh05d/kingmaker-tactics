@@ -10,6 +10,7 @@ namespace KingmakerTactics.Tests {
         [InlineData(ActionType.CastAbility)]
         [InlineData(ActionType.UseItem)]
         [InlineData(ActionType.Heal)]
+        [InlineData(ActionType.ThrowSplash)] // quick-slot flask = animated cast
         public void ability_backed_types_use_the_supplied_ability_slot(ActionType type) {
             Assert.Equal(UnitCommand.CommandType.Swift,
                 ActionSlots.Classify(type, UnitCommand.CommandType.Swift));
@@ -26,13 +27,13 @@ namespace KingmakerTactics.Tests {
         [InlineData(ActionType.CastAbility)]
         [InlineData(ActionType.UseItem)]
         [InlineData(ActionType.Heal)]
+        [InlineData(ActionType.ThrowSplash)] // out-of-combat inventory flask: no engine slot
         public void ability_backed_types_fall_back_to_standard_when_slot_unknown(ActionType type) {
             Assert.Equal(UnitCommand.CommandType.Standard, ActionSlots.Classify(type, null));
         }
 
         [Theory]
         [InlineData(ActionType.AttackTarget)]
-        [InlineData(ActionType.ThrowSplash)]
         [InlineData(ActionType.DoNothing)]
         public void fixed_standard_types_ignore_the_supplied_slot(ActionType type) {
             Assert.Equal(UnitCommand.CommandType.Standard, ActionSlots.Classify(type, null));

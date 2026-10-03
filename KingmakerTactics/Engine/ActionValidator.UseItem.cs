@@ -79,6 +79,9 @@ namespace KingmakerTactics.Engine {
             inventorySource = null;
             foreach (var item in inventory) {
                 if (item == null || item.Count <= 0) continue;
+                // Kingmaker: false for every usable item while Player.IsInCombat (IL ItemEntity.get_IsUsableFromInventory);
+                // TryUseFromInventory would refuse. In combat only quick-slot items (owner.Abilities) apply.
+                if (!item.IsUsableFromInventory) continue;
                 var usable = item.Blueprint as BlueprintItemEquipmentUsable;
                 if (usable?.Ability == null) continue;
                 if (usable.Type != wantedType) continue;

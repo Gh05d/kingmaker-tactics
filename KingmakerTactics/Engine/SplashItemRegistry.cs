@@ -2,8 +2,8 @@ using System.Collections.Generic;
 
 namespace KingmakerTactics.Engine {
     /// <summary>
-    /// Hardcoded list of vanilla Pathfinder: WotR splash items.
-    /// GUIDs are extracted from blueprints.zip and fixed at compile time.
+    /// Hardcoded list of vanilla Pathfinder: Kingmaker splash items (GUIDs verified against
+    /// kingmaker/il-dump/blueprints-index.tsv; Kingmaker has no Holy Water item).
     /// Mod-added items are intentionally not supported.
     /// </summary>
     public static class SplashItemRegistry {
@@ -16,7 +16,6 @@ namespace KingmakerTactics.Engine {
         static readonly Entry[] Items = new[] {
             new Entry { Guid = "4639724c4a9cc9544a2f622b66931658", DamagePriority = 35, CostPriority = 20 }, // Acid Flask
             new Entry { Guid = "fd56596e273d1ff49a8c29cc9802ae6e", DamagePriority = 70, CostPriority = 20 }, // Alchemist's Fire
-            new Entry { Guid = "a8bc157a846e2d64498915cadd026aef", DamagePriority = 50, CostPriority = 25 }, // Holy Water
         };
 
         static readonly HashSet<string> LookupSet = new HashSet<string>();

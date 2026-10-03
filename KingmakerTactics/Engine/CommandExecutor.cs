@@ -31,7 +31,7 @@ namespace KingmakerTactics.Engine {
                     case ActionType.Heal:
                         return ExecuteHeal(action, owner, target.Unit, out issuedCommand);
                     case ActionType.ThrowSplash:
-                        return ExecuteThrowSplash(action, owner, target.Unit);
+                        return ExecuteThrowSplash(action, owner, target.Unit, out issuedCommand);
                     case ActionType.SwitchWeaponSet:
                         return ExecuteSwitchWeaponSet(action.WeaponSetIndex, owner, out issuedCommand);
                     case ActionType.MoveToTarget:
@@ -53,10 +53,10 @@ namespace KingmakerTactics.Engine {
             return new TargetWrapper(owner); // fallback preserves pre-refactor "no target = self" behavior
         }
 
-        // UnitCommands.Run can silently discard the command instead of slotting it
-        // (IL-verified): CanRunCommand vetoes when the unit is not IsConscious or has
-        // UnitCondition.CantUseStandardActions (Standard commands), and TryMergeInto
-        // folds a same-Ability UnitUseAbility into a still-running PreviousCommand.
+        // UnitCommands.Run can silently discard the command instead of slotting it:
+        // TryMergeInto folds a same-Ability UnitUseAbility (or a same-target UnitAttack)
+        // into a still-running command, and the engine may refuse to slot it at all
+        // (engine-verification.md §2 — Kingmaker has no CanRunCommand veto like Wrath).
         // A discarded command never starts and never finishes — tracking it would
         // wedge ActiveRuleTracker's priority gate until combat end (rules "skipped").
         // Returns the command actually in flight (the issued one, or the merged slot
@@ -309,7 +309,9 @@ namespace KingmakerTactics.Engine {
             return true;
         }
 
-        static bool ExecuteThrowSplash(ActionDef action, UnitEntityData owner, UnitEntityData target) {
+        static bool ExecuteThrowSplash(ActionDef action, UnitEntityData owner, UnitEntityData target,
+                                       out UnitCommand issuedCommand) {
+            issuedCommand = null;
             if (target == null) {
                 Log.Engine.Warn($"ThrowSplash: no target for {owner.CharacterName}");
                 return false;
@@ -319,6 +321,16 @@ namespace KingmakerTactics.Engine {
             if (!pick.HasValue) {
                 Log.Engine.Warn($"ThrowSplash: no splash items available for {owner.CharacterName}");
                 return false;
+            }
+
+            // Quick-slot flask: the engine's own cast command, as when the player clicks the
+            // belt slot (animated, spends the stack through the ability's SourceItem).
+            if (pick.Value.QuickSlot != null) {
+                var command = UnitUseAbility.CreateCastCommand(pick.Value.QuickSlot, new TargetWrapper(target));
+                issuedCommand = RunVerified(owner, command);
+                if (issuedCommand == null) return false;
+                Log.Engine.Info($"ThrowSplash: {owner.CharacterName} throws {pick.Value.Name} (quick slot) at {target.CharacterName}");
+                return true;
             }
 
             var item = pick.Value.Item;

@@ -89,9 +89,9 @@ namespace KingmakerTactics.Engine {
 
         /// <summary>
         /// Returns best heal ability plus the inventory ItemEntity it came from (null for
-        /// spellbook spells, class abilities, and quickslot/equipped wands). Caller must
-        /// consume the item via Inventory.Remove after casting — synthesized AbilityData
-        /// from inventory doesn't auto-consume through Rulebook.Trigger.
+        /// spellbook spells, class abilities, and quickslot/equipped wands). Inventory items
+        /// are cast through ItemEntity.TryUseFromInventory, which spends the item itself;
+        /// they are only offered out of combat (IsUsableFromInventory).
         ///
         /// `target` drives Auto-mode energy detection (undead → Negative, else Positive).
         /// `pin` overrides the auto-pick: Positive / Negative force a specific energy type
@@ -222,6 +222,9 @@ namespace KingmakerTactics.Engine {
             if (inventory != null && (wantScroll || wantPotion)) {
                 foreach (var item in inventory) {
                     if (item == null || item.Count <= 0) continue;
+                    // Kingmaker: false for every usable item while Player.IsInCombat (IL ItemEntity.get_IsUsableFromInventory);
+                    // TryUseFromInventory would refuse. In combat only quick-slot items (owner.Abilities) apply.
+                    if (!item.IsUsableFromInventory) continue;
                     invTotal++;
                     var usable = item.Blueprint as BlueprintItemEquipmentUsable;
                     if (usable == null || usable.Ability == null) continue;

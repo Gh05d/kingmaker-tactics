@@ -28,12 +28,12 @@ namespace KingmakerTactics.Engine {
                 case ActionType.AttackTarget:
                     return UnitCommand.CommandType.Standard;
 
-                // ThrowSplash bypasses Commands.Run entirely (Rulebook.Trigger plus manual
-                // stack consumption), so it occupies no engine slot. It still claims Standard
-                // in the tick budget: a thrown flask IS a standard action, and leaving it
-                // unclaimed would let it fire on top of a cast AND an attack every tick.
+                // ThrowSplash: a quick-slot flask is an animated cast (its RuntimeActionType);
+                // an out-of-combat inventory flask goes through TryUseFromInventory and occupies
+                // no engine slot, but still claims Standard in the tick budget — a thrown flask
+                // IS a standard action.
                 case ActionType.ThrowSplash:
-                    return UnitCommand.CommandType.Standard;
+                    return abilitySlot ?? UnitCommand.CommandType.Standard;
 
                 // Kingmaker: UnitSwitchHandEquipmentSet is CommandType.Move (engine-verification.md §1;
                 // Wrath: Free). Run(Move) removes the paired Standard, hence the cross-slot check.
