@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kingmaker;
 using Kingmaker.EntitySystem.Entities;
+using Kingmaker.UnitLogic;
 using UnityEngine;
 using KingmakerTactics.Logging;
 using KingmakerTactics.Models;
@@ -109,9 +110,14 @@ namespace KingmakerTactics.Engine {
             return idx >= 0 ? allies[idx] : null;
         }
 
+        // A dead ally (LifeState.Dead) cannot be healed — the engine rejects the target — and
+        // as the lowest-HP ally it would block healing everyone else. Unconscious allies stay:
+        // a Cure brings them back up.
+        internal static bool IsHealableLifeState(UnitLifeState state) => state != UnitLifeState.Dead;
+
         static UnitEntityData GetAllyLowestHp(UnitEntityData owner) {
             return GetAllies(owner)
-                .Where(u => u != owner)
+                .Where(u => u != owner && IsHealableLifeState(u.Descriptor.State.LifeState))
                 .OrderBy(u => (float)u.HPLeft / System.Math.Max(1, u.Stats.HitPoints.ModifiedValue))
                 .FirstOrDefault();
         }

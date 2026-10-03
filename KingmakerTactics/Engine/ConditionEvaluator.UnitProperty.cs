@@ -14,6 +14,11 @@ namespace KingmakerTactics.Engine {
 
             switch (condition.Property) {
                 case ConditionProperty.HpPercent:
+                    // A dead ally is not "low HP" (it cannot be healed, and TargetResolver skips it
+                    // as heal target); counting it would fire heal rules at the next-weakest,
+                    // possibly healthy ally. Unconscious allies still read as 0 %.
+                    if (!TargetResolver.IsHealableLifeState(unit.Descriptor.State.LifeState))
+                        return false;
                     if (unit.HPLeft <= 0 && unit.Stats.HitPoints.ModifiedValue > 0)
                         return CompareFloat(0, condition.Operator, threshold);
                     float hpPct = (float)unit.HPLeft / unit.Stats.HitPoints.ModifiedValue * 100f;
