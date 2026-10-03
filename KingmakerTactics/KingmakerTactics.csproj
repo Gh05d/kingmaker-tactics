@@ -2,7 +2,7 @@
 	<Import Project="$(SolutionDir)GamePath.props" Condition="Exists('$(SolutionDir)GamePath.props')" />
 
 	<PropertyGroup>
-		<TargetFramework>net481</TargetFramework>
+		<TargetFramework>net472</TargetFramework>
 		<AssemblyName>KingmakerTactics</AssemblyName>
 		<Version>0.1.0</Version>
 		<LangVersion>latest</LangVersion>
@@ -13,13 +13,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Assembly-CSharp*.dll" Publicize="true" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Owlcat*.dll" Publicize="true" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Core*.dll" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Unity*.dll" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\UnityModManager\UnityModManager.dll*" Publicize="true" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\UnityModManager\0Harmony.dll*" Private="false" />
-		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Newtonsoft.Json.dll*" Private="false" />
+		<Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Assembly-CSharp*.dll" Publicize="true" Private="false" />
+		<Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Unity*.dll" Private="false" />
+		<Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\UnityModManager\UnityModManager.dll*" Publicize="true" Private="false" />
+		<Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\UnityModManager\0Harmony.dll*" Private="false" />
+		<Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Newtonsoft.Json.dll*" Private="false" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -3,7 +3,7 @@
   <Import Project="$(SolutionDir)GamePath.props" Condition="Exists('$(SolutionDir)GamePath.props')" />
 
   <PropertyGroup>
-    <TargetFramework>net481</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
     <RootNamespace>KingmakerTactics.Tests</RootNamespace>
@@ -34,9 +34,9 @@
     merely widens visibility, so the runtime overlay stays binary-compatible.
   -->
   <ItemGroup>
-    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\Assembly-CSharp.dll" Private="false" />
     <!-- UnityEngine.Color / Mathf are plain managed structs: ThemeTests exercises Theme.PackBandTint. -->
-    <Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(KingmakerInstallDir)\Kingmaker_Data\Managed\UnityEngine.CoreModule.dll" Private="false" />
   </ItemGroup>
 
   <!--
@@ -50,8 +50,8 @@
   -->
   <Target Name="CopyGameDllsToTestOutput" AfterTargets="Build">
     <ItemGroup>
-      <_GameDllsBase Include="$(SolutionDir)GameInstall\Wrath_Data\Managed\*.dll" />
-      <_GameDllsUMM Include="$(SolutionDir)GameInstall\Wrath_Data\Managed\UnityModManager\*.dll" />
+      <_GameDllsBase Include="$(SolutionDir)GameInstall\Kingmaker_Data\Managed\*.dll" />
+      <_GameDllsUMM Include="$(SolutionDir)GameInstall\Kingmaker_Data\Managed\UnityModManager\*.dll" />
       <_PublicizedDlls Include="$(SolutionDir)KingmakerTactics\obj\$(Configuration)\publicized\*.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_GameDllsBase)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
