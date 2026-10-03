@@ -38,12 +38,12 @@ bump version (3 files) → Release build (produces <Mod>-X.Y.Z.zip)
 
 Fill these in once, then substitute throughout:
 
-| Placeholder | Meaning | Example (Wrath Tactics) |
+| Placeholder | Meaning | Example (Kingmaker Tactics) |
 |---|---|---|
-| `<MOD_ID>` | UMM mod id / assembly base name | `WrathTactics` |
-| `<MOD_DISPLAY_NAME>` | Human-facing name | `Wrath Tactics` |
-| `<GH_OWNER>/<GH_REPO>` | GitHub repo slug | `Gh05d/wrath-tactics` |
-| `<CSPROJ_PATH>` | Path to the project file | `WrathTactics/WrathTactics.csproj` |
+| `<MOD_ID>` | UMM mod id / assembly base name | `KingmakerTactics` |
+| `<MOD_DISPLAY_NAME>` | Human-facing name | `Kingmaker Tactics` |
+| `<GH_OWNER>/<GH_REPO>` | GitHub repo slug | `Gh05d/kingmaker-tactics` |
+| `<CSPROJ_PATH>` | Path to the project file | `KingmakerTactics/KingmakerTactics.csproj` |
 | `<NEXUS_GAME_DOMAIN>` | Nexus game domain | `pathfinderwrathoftherighteous` |
 | `<NEXUS_MOD_PAGE_ID>` | Number in the Nexus mod URL | `1005` |
 | `<NEXUS_FILE_GROUP_ID>` | 7-digit file-group id (see §2) | `4191` |
@@ -163,7 +163,7 @@ Notes:
 
 The workflow uploads whatever `.zip` is attached to the release. Have the project
 emit `<MOD_ID>-<Version>.zip` on a Release build. In `<CSPROJ_PATH>`, an MSBuild
-target that zips the build output (this is the Wrath Tactics setup):
+target that zips the build output (this is the Kingmaker Tactics setup):
 
 ```xml
 <Target Name="CreateZip" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">

@@ -1,0 +1,13 @@
+{
+  "Id": "KingmakerTactics",
+  "DisplayName": "Kingmaker Tactics",
+  "Author": "Gh05d",
+  "Version": "0.1.0",
+  "ManagerVersion": "0.23.0",
+  "GameVersion": "2.1.7",
+  "EntryMethod": "KingmakerTactics.Main.Load",
+  "AssemblyName": "KingmakerTactics.dll",
+  "Requirements": [],
+  "HomePage": "",
+  "Repository": "https://raw.githubusercontent.com/Gh05d/kingmaker-tactics/master/Repository.json"
+}

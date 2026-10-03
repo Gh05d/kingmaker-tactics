@@ -47,8 +47,8 @@ jobs:
 
       # Nexus v3 createModFileVersion flow: POST /mod-files/{file_id}/versions.
       # file_id is the mod-file id from GET /v3/mods/{numeric_mod_id}/files
-      # (-> data.mod_files[].id); this single-file mod's id is 7334711 (same
-      # value as the old file_group_id). Pinned to an immutable tag — NEVER @main:
+      # (-> data.mod_files[].id). Kingmaker Tactics has no Nexus page before v1.0;
+      # set repo var NEXUSMODS_FILE_ID once the page exists. Pinned to an immutable tag — NEVER @main:
       # a moving branch shipped the 2026-06-17 breaking input migration.
       - name: Upload to Nexus Mods
         uses: Nexus-Mods/upload-action@v1.0.0-beta.8

@@ -1,4 +1,4 @@
-# Wrath Tactics — API Deep Dive
+# Kingmaker Tactics — API Deep Dive
 
 Long-form companion notes to the compact rules in `CLAUDE.md`. IL evidence, version history, predecessor patterns, and incident reports live here.
 
@@ -88,8 +88,8 @@ Each constraint exists to fix a specific over-block regression that landed in pr
 When the user reports a behavior bug after a code change, the FIRST diagnostic step is:
 
 ```bash
-ssh deck-direct "stat -c '%y' '<game>/Mods/WrathTactics/WrathTactics.dll'"
-ls -l WrathTactics/bin/Debug/WrathTactics.dll
+ssh deck-direct "stat -c '%y' '<game>/Mods/KingmakerTactics/KingmakerTactics.dll'"
+ls -l KingmakerTactics/bin/Debug/KingmakerTactics.dll
 ```
 
 If the deck DLL is older than the local source change, `./deploy.sh` wasn't run and the fix literally isn't on the system under test.

@@ -7,7 +7,7 @@ conditions + `CooldownRounds: 0` force the full pattern every tick; enums are nu
 
 Push (game closed or before the next mod load — presets/packs are read at mod start):
 
-    tar -C docs/testing/deck-smoke -cf - Presets Packs | ssh deck-direct "tar -xf - -C '<gamepath>/Mods/WrathTactics'"
+    tar -C docs/testing/deck-smoke -cf - Presets Packs | ssh deck-direct "tar -xf - -C '<gamepath>/Mods/KingmakerTactics'"
 
 Then apply the pack to the unit in the panel; re-apply after adding presets (no sync on load).
 Remove the pack's rules from the unit afterwards (chip menu, option 2) — it fires every round otherwise.

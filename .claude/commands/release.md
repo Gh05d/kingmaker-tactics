@@ -1,16 +1,16 @@
-# /release — Wrath Tactics Release Orchestrator
+# /release — Kingmaker Tactics Release Orchestrator
 
 ## Konfiguration (hardcoded)
 
 - Remote: `origin`
-- Repo: `Gh05d/wrath-tactics`
-- Mod-Name: `Wrath Tactics`
+- Repo: `Gh05d/kingmaker-tactics`
+- Mod-Name: `Kingmaker Tactics`
 - Nexus-URL: `https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/1005` (nach Nexus-Page-Creation echten Wert einsetzen)
-- csproj: `WrathTactics/WrathTactics.csproj`
-- Info.json: `WrathTactics/Info.json`
+- csproj: `KingmakerTactics/KingmakerTactics.csproj`
+- Info.json: `KingmakerTactics/Info.json`
 - Repository.json: `Repository.json`
-- Build: `~/.dotnet/dotnet build WrathTactics/WrathTactics.csproj -c Release -p:SolutionDir=$(pwd)/ --nologo`
-- Release-Zip: `WrathTactics/bin/WrathTactics-X.Y.Z.zip`
+- Build: `~/.dotnet/dotnet build KingmakerTactics/KingmakerTactics.csproj -c Release -p:SolutionDir=$(pwd)/ --nologo`
+- Release-Zip: `KingmakerTactics/bin/KingmakerTactics-X.Y.Z.zip`
 
 ---
 
@@ -39,9 +39,9 @@ Führe alle Checks aus, bevor du irgendetwas änderst.
    ```
    Nicht `master`: Abbruch mit „Fehler: Nicht auf master-Branch."
 
-3. **Aktuelle Version lesen** aus `WrathTactics/WrathTactics.csproj`:
+3. **Aktuelle Version lesen** aus `KingmakerTactics/KingmakerTactics.csproj`:
    ```
-   grep -oP '<Version>\K[^<]+' WrathTactics/WrathTactics.csproj
+   grep -oP '<Version>\K[^<]+' KingmakerTactics/KingmakerTactics.csproj
    ```
    Gültige Form: `X.Y.Z` (drei Zahlen). Ungültig: Abbruch mit „Fehler: Keine gültige Semver-Version in csproj gefunden."
 
@@ -82,8 +82,8 @@ Führe alle Checks aus, bevor du irgendetwas änderst.
 
    ## Installation
 
-   1. Download `WrathTactics-X.Y.Z.zip`
-   2. Drag onto the Unity Mod Manager window, or extract into `{GameDir}/Mods/WrathTactics/`
+   1. Download `KingmakerTactics-X.Y.Z.zip`
+   2. Drag onto the Unity Mod Manager window, or extract into `{GameDir}/Mods/KingmakerTactics/`
    3. Enable in Unity Mod Manager
 
    ## Requirements
@@ -102,16 +102,16 @@ Führe alle Checks aus, bevor du irgendetwas änderst.
 
 Aktualisiere die Version in exakt diesen drei Dateien:
 
-1. **`WrathTactics/WrathTactics.csproj`** — `<Version>X.Y.Z</Version>` ersetzen
-2. **`WrathTactics/Info.json`** — `"Version": "X.Y.Z"` ersetzen
+1. **`KingmakerTactics/KingmakerTactics.csproj`** — `<Version>X.Y.Z</Version>` ersetzen
+2. **`KingmakerTactics/Info.json`** — `"Version": "X.Y.Z"` ersetzen
 3. **`Repository.json`** — `"Version": "X.Y.Z"` und `"DownloadUrl"` auf:
    ```
-   https://github.com/Gh05d/wrath-tactics/releases/download/vX.Y.Z/WrathTactics-X.Y.Z.zip
+   https://github.com/Gh05d/kingmaker-tactics/releases/download/vX.Y.Z/KingmakerTactics-X.Y.Z.zip
    ```
 
 Commit erstellen:
 ```
-git add WrathTactics/WrathTactics.csproj WrathTactics/Info.json Repository.json
+git add KingmakerTactics/KingmakerTactics.csproj KingmakerTactics/Info.json Repository.json
 git commit -m "chore: bump version to X.Y.Z"
 ```
 
@@ -120,18 +120,18 @@ git commit -m "chore: bump version to X.Y.Z"
 ## Schritt 5: Build
 
 ```
-~/.dotnet/dotnet build WrathTactics/WrathTactics.csproj -c Release -p:SolutionDir=$(pwd)/ --nologo
+~/.dotnet/dotnet build KingmakerTactics/KingmakerTactics.csproj -c Release -p:SolutionDir=$(pwd)/ --nologo
 ```
 
 Danach prüfen ob das ZIP existiert:
 ```
-ls WrathTactics/bin/WrathTactics-X.Y.Z.zip
+ls KingmakerTactics/bin/KingmakerTactics-X.Y.Z.zip
 ```
 
 **Build schlägt fehl oder ZIP nicht vorhanden:**
 ```
 git reset --soft HEAD~1
-git restore --staged WrathTactics/WrathTactics.csproj WrathTactics/Info.json Repository.json
+git restore --staged KingmakerTactics/KingmakerTactics.csproj KingmakerTactics/Info.json Repository.json
 ```
 Abbruch mit „Fehler: Build fehlgeschlagen. Versions-Bump wurde rückgängig gemacht."
 
@@ -144,7 +144,7 @@ Zeige dem User eine Zusammenfassung:
 ```
 === Release bereit ===
 Version:  vX.Y.Z
-ZIP:      WrathTactics/bin/WrathTactics-X.Y.Z.zip
+ZIP:      KingmakerTactics/bin/KingmakerTactics-X.Y.Z.zip
 
 Was jetzt passiert:
   1. git push origin master
@@ -162,7 +162,7 @@ Fortfahren? (ja/nein)
 **User sagt nein oder bricht ab:**
 ```
 git reset --soft HEAD~1
-git restore --staged WrathTactics/WrathTactics.csproj WrathTactics/Info.json Repository.json
+git restore --staged KingmakerTactics/KingmakerTactics.csproj KingmakerTactics/Info.json Repository.json
 ```
 Meldung: „Release abgebrochen. Versions-Bump rückgängig gemacht."
 
@@ -179,7 +179,7 @@ Reihenfolge ist wichtig — Code erst pushen, dann taggen:
    Schlägt fehl:
    ```
    git reset --soft HEAD~1
-   git restore --staged WrathTactics/WrathTactics.csproj WrathTactics/Info.json Repository.json
+   git restore --staged KingmakerTactics/KingmakerTactics.csproj KingmakerTactics/Info.json Repository.json
    ```
    Abbruch mit „Fehler: Push fehlgeschlagen. Versions-Bump rückgängig gemacht."
 
@@ -200,9 +200,9 @@ Reihenfolge ist wichtig — Code erst pushen, dann taggen:
 
 4. **GitHub Release erstellen:**
    ```
-   gh release create vX.Y.Z "WrathTactics/bin/WrathTactics-X.Y.Z.zip" \
-     --repo Gh05d/wrath-tactics \
-     --title "Wrath Tactics vX.Y.Z" \
+   gh release create vX.Y.Z "KingmakerTactics/bin/KingmakerTactics-X.Y.Z.zip" \
+     --repo Gh05d/kingmaker-tactics \
+     --title "Kingmaker Tactics vX.Y.Z" \
      --notes "<GitHub Markdown Notes>"
    ```
    Schlägt fehl: Manuellen Befehl anzeigen und weitermachen.
@@ -213,7 +213,7 @@ Reihenfolge ist wichtig — Code erst pushen, dann taggen:
 
 Prüfe ob die GitHub Action für den Nexus-Upload erfolgreich war:
 ```
-gh run list --repo Gh05d/wrath-tactics --limit 1
+gh run list --repo Gh05d/kingmaker-tactics --limit 1
 ```
 
 Zeige dem User die Zusammenfassung:
@@ -221,14 +221,14 @@ Zeige dem User die Zusammenfassung:
 ```
 === Release vX.Y.Z abgeschlossen! ===
 
-GitHub: https://github.com/Gh05d/wrath-tactics/releases/tag/vX.Y.Z
+GitHub: https://github.com/Gh05d/kingmaker-tactics/releases/tag/vX.Y.Z
 Nexus:  Automatisch hochgeladen via GitHub Action (Status: <success/failure>)
 ```
 
 Falls die GitHub Action fehlgeschlagen ist, zeige den manuellen Nexus-Upload-Link:
 ```
 Nexus Upload (manuell): https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/1005?tab=files
-ZIP: WrathTactics/bin/WrathTactics-X.Y.Z.zip
+ZIP: KingmakerTactics/bin/KingmakerTactics-X.Y.Z.zip
 ```
 
 ---

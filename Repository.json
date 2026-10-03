@@ -1,9 +1,9 @@
 {
     "Releases": [
         {
-            "Id": "WrathTactics",
-            "Version": "1.32.1",
-            "DownloadUrl": "https://github.com/Gh05d/wrath-tactics/releases/download/v1.32.1/WrathTactics-1.32.1.zip"
+            "Id": "KingmakerTactics",
+            "Version": "0.1.0",
+            "DownloadUrl": "https://github.com/Gh05d/kingmaker-tactics/releases/download/v0.1.0/KingmakerTactics-0.1.0.zip"
         }
     ]
 }

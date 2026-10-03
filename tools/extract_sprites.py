@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Extract the UI sprites Wrath Tactics bundles from the game's sharedassets0.assets.
+"""Extract the UI sprites Kingmaker Tactics bundles from the game's sharedassets0.assets.
 
 Usage:
   ~/.local/opt/unitypy-venv/bin/python tools/extract_sprites.py <dir-with-sharedassets0.assets> [out-dir]
 
 The .resS companion must sit next to the .assets file. Default out-dir is
-WrathTactics/Assets/icons. Prints the Unity 9-slice border (left, bottom, right, top)
+KingmakerTactics/Assets/icons. Prints the Unity 9-slice border (left, bottom, right, top)
 of every sprite so ThemeProvider.cs can be checked against the current game build.
 """
 import os
@@ -41,7 +41,7 @@ def main():
         sys.exit(2)
     src_dir = sys.argv[1]
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.join(repo_root, "WrathTactics", "Assets", "icons")
+    out_dir = sys.argv[2] if len(sys.argv) > 2 else os.path.join(repo_root, "KingmakerTactics", "Assets", "icons")
     os.makedirs(out_dir, exist_ok=True)
 
     env = UnityPy.load(os.path.join(src_dir, "sharedassets0.assets"))

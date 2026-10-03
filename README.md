@@ -1,4 +1,4 @@
-# Wrath Tactics
+# Kingmaker Tactics
 
 **Make Companions Smart Again.**
 
@@ -26,13 +26,13 @@ You set the rules once, the mod handles the rest while you focus on positioning 
 - **Action types**: Cast Spell, Cast Ability, Use Item, Toggle Activatable, Attack, Heal (auto-picks best available heal across spells/scrolls/potions/wands), Do Nothing
 - **Target selectors**: Self, Ally with lowest HP, Enemy with highest AC / biggest threat / specific creature type, or the specific entity that matched the condition
 - **Ability variants supported** — Evil Eye – AC / Evil Eye – Attack / Channel Positive Energy – Damage Undead, etc., with full cast animations
-- **BubbleBuffs compatible** — Wrath Tactics handles in-combat reactions while BubbleBuffs handles pre-combat buffing. No conflicts.
-- **Per-session debug logging** to its own file (`Mods/WrathTactics/Logs/wrath-tactics-YYYY-MM-DD-HHmmss.log`) with levels (Trace/Debug/Info/Warn/Error) and categories (Engine/UI/Persistence/Compat/Game)
+- **BubbleBuffs compatible** — Kingmaker Tactics handles in-combat reactions while BubbleBuffs handles pre-combat buffing. No conflicts.
+- **Per-session debug logging** to its own file (`Mods/KingmakerTactics/Logs/wrath-tactics-YYYY-MM-DD-HHmmss.log`) with levels (Trace/Debug/Info/Warn/Error) and categories (Engine/UI/Persistence/Compat/Game)
 
 ## Installation
 
 1. Install [Unity Mod Manager](https://www.nexusmods.com/site/mods/21) and enable it for Pathfinder: Wrath of the Righteous
-2. Download the latest `WrathTactics-X.Y.Z.zip` from the [Releases](https://github.com/Gh05d/wrath-tactics/releases) page
+2. Download the latest `KingmakerTactics-X.Y.Z.zip` from the [Releases](https://github.com/Gh05d/kingmaker-tactics/releases) page
 3. Drag the zip onto the UMM window — it installs automatically
 4. Launch the game
 
@@ -159,7 +159,7 @@ A **positive** margin means you hit easily — it's how many points of slack you
 
 ## BubbleBuffs compatibility
 
-Wrath Tactics plays nicely with [Buff It 2 The Limit (BubbleBuffs)](https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/948). The HUD button for Wrath Tactics is placed next to BubbleBuffs' quick-buttons when both mods are installed. There are no shared state conflicts — BubbleBuffs handles pre-combat buff routines, Wrath Tactics handles in-combat tactical decisions.
+Kingmaker Tactics plays nicely with [Buff It 2 The Limit (BubbleBuffs)](https://www.nexusmods.com/pathfinderwrathoftherighteous/mods/948). The HUD button for Kingmaker Tactics is placed next to BubbleBuffs' quick-buttons when both mods are installed. There are no shared state conflicts — BubbleBuffs handles pre-combat buff routines, Kingmaker Tactics handles in-combat tactical decisions.
 
 ## Inspiration
 
@@ -177,7 +177,7 @@ See [CLAUDE.md](CLAUDE.md) for dev notes. Built with:
 ### Build
 
 ```bash
-~/.dotnet/dotnet build WrathTactics/WrathTactics.csproj -p:SolutionDir=$(pwd)/
+~/.dotnet/dotnet build KingmakerTactics/KingmakerTactics.csproj -p:SolutionDir=$(pwd)/
 ```
 
 On Linux, symlink or create `GamePath.props` pointing to the game's `Wrath_Data/Managed` directory.

@@ -1,0 +1,74 @@
+using Kingmaker.UnitLogic.Abilities;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+
+namespace KingmakerTactics.Models {
+    public class TacticsRule {
+        [JsonProperty] public string Id { get; set; } = System.Guid.NewGuid().ToString();
+        [JsonProperty] public string Name { get; set; } = "New Rule";
+        [JsonProperty] public bool Enabled { get; set; } = true;
+        [JsonProperty] public int CooldownRounds { get; set; } = 1;
+        [JsonProperty] public List<ConditionGroup> ConditionGroups { get; set; } = new();
+        [JsonProperty] public ActionDef Action { get; set; } = new();
+        [JsonProperty] public TargetDef Target { get; set; } = new();
+        /// <summary>Optional link to a preset; when set, rule body (conditions/action/target) is resolved from the preset at runtime.</summary>
+        [JsonProperty] public string PresetId { get; set; }
+        /// <summary>
+        /// Origin marker set when the rule was inserted by applying a pack. Purely
+        /// organisational: it drives the header tint and the per-pack chip actions.
+        /// A rule list may mix rules from several packs and hand-built rules (PackId null).
+        /// A dangling PackId (pack deleted) is harmless — the rule keeps working, untinted.
+        /// </summary>
+        [JsonProperty] public string PackId { get; set; }
+    }
+
+    public class ConditionGroup {
+        [JsonProperty] public List<Condition> Conditions { get; set; } = new();
+    }
+
+    public class Condition {
+        [JsonProperty] public ConditionSubject Subject { get; set; }
+        [JsonProperty] public ConditionProperty Property { get; set; }
+        [JsonProperty] public ConditionOperator Operator { get; set; }
+        // Operator applied to the count itself for AllyCount/EnemyCount (e.g. count < 3, count >= 2).
+        // Defaults to GreaterOrEqual so legacy saves without this field keep their original behavior.
+        [JsonProperty] public ConditionOperator CountOperator { get; set; } = ConditionOperator.GreaterOrEqual;
+        [JsonProperty] public string Value { get; set; } = "";
+        [JsonProperty] public string Value2 { get; set; } = "";  // For AllyCount/EnemyCount: the count threshold
+    }
+
+    public class ActionDef {
+        [JsonProperty] public ActionType Type { get; set; }
+        [JsonProperty] public string AbilityId { get; set; } = "";
+        // CastSpell / CastAbility fallback chain: tried in order after AbilityId when the
+        // primary resolver misses (no slot, no scroll, UMD fail, resource exhausted, etc.).
+        // Each entry goes through the full Sources mask, so a fallback can still fall through
+        // Spellbook -> Wand -> Scroll -> Potion for itself (CastSpell only; class abilities
+        // only match the Spell branch because their GUIDs don't appear in inventory items).
+        // Type-homogeneous — entries share the parent rule's Action.Type. Empty on legacy rules.
+        [JsonProperty] public List<string> FallbackAbilityIds { get; set; } = new();
+        [JsonProperty] public HealMode HealMode { get; set; } = HealMode.Any;
+        [JsonProperty] public HealSourceMask HealSources { get; set; } = HealSourceMask.All;
+        [JsonProperty] public HealEnergyType HealEnergy { get; set; } = HealEnergyType.Auto;
+        [JsonProperty] public SpellSourceMask Sources { get; set; } = SpellSourceMask.All;
+        [JsonProperty] public ThrowSplashMode SplashMode { get; set; } = ThrowSplashMode.Any;
+        [JsonProperty] public ToggleMode ToggleMode { get; set; } = ToggleMode.On;
+        // Optional metamagic-rod tag for CastSpell. When set, CommandExecutor activates the
+        // matching rod's ActivatableAbility before issuing the cast — the engine then
+        // applies the metamagic and spends one rod charge. Null = cast without rod
+        // (legacy behaviour). Falls back silently to a normal cast when no usable rod is
+        // equipped+quickslotted.
+        [JsonProperty] public Metamagic? MetamagicRod { get; set; }
+        // Target HandsEquipmentSet index for ActionType.SwitchWeaponSet. UnitBody allocates
+        // exactly 4 slots, so valid range is 0-3. Stored as plain int (not enum) because the
+        // engine uses int indices throughout (UnitSwitchHandEquipmentSet ctor + set_CurrentHandEquipmentSetIndex).
+        [JsonProperty] public int WeaponSetIndex { get; set; }
+        // MoveToTarget: stop once the unit is inside this bracket of the target.
+        [JsonProperty] public RangeBracket MoveWithin { get; set; } = RangeBracket.Melee;
+    }
+
+    public class TargetDef {
+        [JsonProperty] public TargetType Type { get; set; }
+        [JsonProperty] public string Filter { get; set; } = "";
+    }
+}

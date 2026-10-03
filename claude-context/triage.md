@@ -10,7 +10,7 @@ Recipes for diagnosing user reports and deck-side behavior. General bug-report p
 
 ## Log Locations & Recipes
 
-- **Mod session logs**: `<game>/Mods/WrathTactics/Logs/wrath-tactics-YYYY-MM-DD-HHMMSS.log` (separate from `Player.log`). Latest: `ssh deck-direct "ls -t '<game>/Mods/WrathTactics/Logs/' | head -1"`.
+- **Mod session logs**: `<game>/Mods/KingmakerTactics/Logs/wrath-tactics-YYYY-MM-DD-HHMMSS.log` (separate from `Player.log`). Latest: `ssh deck-direct "ls -t '<game>/Mods/KingmakerTactics/Logs/' | head -1"`.
 - **`"MATCH but action not executable"` is the triage smoking gun for "Rule didn't fire" reports**: rule matched, target resolved, but `ActionValidator.CanExecute` rejected — most commonly `"No suitable spell slots"`. Grep for it BEFORE asking the user for setup details — most reports resolve to "spell not prepared".
 - **Global-preemption semantics for "rules never fire" triage**: global rules skip character rules only on successful EXECUTION (or while the issued command still runs, `ActiveRuleTracker` CharGate=0) — a global rule that matches but fails validation ("MATCH but action not executable") does NOT block character rules.
 - **For CastSpell rules also grep `engine-unavailable` and `no available slots`** (TRACE-level): fired from `FindCastSpellSource` when an ability matched but isn't currently castable. `engine-unavailable` carries `GetUnavailableReason()` (silenced, polymorphed, opposition school, UMD fail); `no available slots` carries the variant GUID and metamagic mask.
@@ -50,7 +50,7 @@ The `EXECUTED` line now carries the slot: `EXECUTED [Move] -> Ember`. `[no-slot]
 
 Statt auf eine passende User-Config zu hoffen: Presets als `Presets/{Id}.json` + Pack als `Packs/{Id}.json` direkt aufs Deck legen (Enums **numerisch**, Format aus einem vorhandenen Preset abschauen). **Leere `ConditionGroups` = immer wahr** und `CooldownRounds: 0` erzwingen das volle Muster in jedem Tick — deterministischer Log ohne Condition-Encoding-Risiko. Presets/Packs werden beim Mod-Load gelesen, also Spielneustart nötig. Auswertung: `grep -oE 'EXECUTED \[[A-Za-z-]+\]' | sort | uniq -c` plus die Skip-Gründe.
 
-Presets, die nach der Zuweisung ins Pack kommen, erscheinen erst nach erneutem **Anwenden** des Packs auf der Figur — es gibt keinen Sync beim Laden. Log-Zähler auf den Zeilenanfang ankern (`'\] MoveToTarget: '`), sonst zählen Teilstrings wie `CanMoveToTarget:` mit. Die Fixture liegt im Repo: `docs/testing/deck-smoke/` (Push: `tar -C docs/testing/deck-smoke -cf - Presets Packs | ssh deck-direct "tar -xf - -C '<gamepath>/Mods/WrathTactics'"`).
+Presets, die nach der Zuweisung ins Pack kommen, erscheinen erst nach erneutem **Anwenden** des Packs auf der Figur — es gibt keinen Sync beim Laden. Log-Zähler auf den Zeilenanfang ankern (`'\] MoveToTarget: '`), sonst zählen Teilstrings wie `CanMoveToTarget:` mit. Die Fixture liegt im Repo: `docs/testing/deck-smoke/` (Push: `tar -C docs/testing/deck-smoke -cf - Presets Packs | ssh deck-direct "tar -xf - -C '<gamepath>/Mods/KingmakerTactics'"`).
 
 Das Pack danach von der Figur abziehen — `CooldownRounds: 0` + leere Conditions heißt sonst jede Runde in jedem Kampf.
 

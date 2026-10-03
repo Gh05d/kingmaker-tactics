@@ -1,4 +1,4 @@
-# Wrath Tactics
+# Kingmaker Tactics
 
 ## Overview
 
@@ -9,21 +9,21 @@ Shared build/deploy/Nexus/release rules: → parent `pathfinder-mods/CLAUDE.md` 
 ## Build
 
 ```bash
-~/.dotnet/dotnet build WrathTactics/WrathTactics.csproj -p:SolutionDir=$(pwd)/
+~/.dotnet/dotnet build KingmakerTactics/KingmakerTactics.csproj -p:SolutionDir=$(pwd)/
 ```
 
-**Release build** (produces distribution zip): add `-c Release` — the `CreateZip` target only runs in Release config; output `bin/WrathTactics-<version>.zip`. NU1900 warnings im Build = NuGet-Vulnerability-Index via Proxy unerreichbar — harmlos, kein Artefakt-Problem.
+**Release build** (produces distribution zip): add `-c Release` — the `CreateZip` target only runs in Release config; output `bin/KingmakerTactics-<version>.zip`. NU1900 warnings im Build = NuGet-Vulnerability-Index via Proxy unerreichbar — harmlos, kein Artefakt-Problem.
 
 **Build-Ergebnis in Ketten prüfen**: `OUT=$(~/.dotnet/dotnet build … 2>&1); echo "$OUT" | grep -q ' error ' && exit 1` — ein `grep -E ' error |Build succeeded'` ist bei Fehlern trotzdem exit 0 und lässt `&& git commit && ./deploy.sh` weiterlaufen.
 
-**Version files** (generic rule → parent §Release Process): `WrathTactics/Info.json` (UMM reads this), `WrathTactics/WrathTactics.csproj` `<Version>` (zip filename), `Repository.json`. Bumping only one ships a zip with the stale version in its name.
+**Version files** (generic rule → parent §Release Process): `KingmakerTactics/Info.json` (UMM reads this), `KingmakerTactics/KingmakerTactics.csproj` `<Version>` (zip filename), `Repository.json`. Bumping only one ships a zip with the stale version in its name.
 
 ## Tests
 
-Pure-logic xUnit suite in `WrathTactics.Tests/` (net481; mono hosts the runner on Linux — `sudo apt install mono-complete` one-time). Run before pushing changes to `ConditionEvaluator`, `BuffBlueprintProvider`, `CommonBuffRegistry`, or `Models/Enums.cs` (`RangeBrackets`).
+Pure-logic xUnit suite in `KingmakerTactics.Tests/` (net481; mono hosts the runner on Linux — `sudo apt install mono-complete` one-time). Run before pushing changes to `ConditionEvaluator`, `BuffBlueprintProvider`, `CommonBuffRegistry`, or `Models/Enums.cs` (`RangeBrackets`).
 
 ```bash
-~/.dotnet/dotnet test WrathTactics.Tests/WrathTactics.Tests.csproj -p:SolutionDir=$(pwd)/
+~/.dotnet/dotnet test KingmakerTactics.Tests/KingmakerTactics.Tests.csproj -p:SolutionDir=$(pwd)/
 ```
 
 - **Flaky mono runner — loop until green before believing failures** (`for i in 1 2 3; do … test --no-build …; done`; mass-failures with varying counts = flake, not regression). Test-csproj facts (game DLLs copied to output by `AfterTargets="Build"`, compile reference to non-publicized `Assembly-CSharp.dll` + `UnityEngine.CoreModule.dll`, `InternalsVisibleTo` → `internal static`, no CI by design) and the Deck smoke-test pack (`docs/testing/deck-smoke/`): `claude-context/testing.md`.
@@ -35,12 +35,12 @@ Pure-logic xUnit suite in `WrathTactics.Tests/` (net481; mono hosts the runner o
 ./deploy.sh
 ```
 
-Rules (timeout 240, never in an `&&` chain before `git commit`, SSH probe first, `strings -el` verification): → parent §Steam Deck Deployment. Tactics-specific: `deploy.sh` also creates `<game>/Mods/WrathTactics/Assets/icons/` and ships `Assets/icons/*.png` (required by `AssetLoader`) next to DLL + Info.json.
+Rules (timeout 240, never in an `&&` chain before `git commit`, SSH probe first, `strings -el` verification): → parent §Steam Deck Deployment. Tactics-specific: `deploy.sh` also creates `<game>/Mods/KingmakerTactics/Assets/icons/` and ships `Assets/icons/*.png` (required by `AssetLoader`) next to DLL + Info.json.
 
 ## Architecture
 
 ```
-WrathTactics/
+KingmakerTactics/
   Main.cs              # UMM entry point, Harmony init, Update() tick loop
   Assets/icons/        # PNG sprites for the UI (deployed by deploy.sh, loaded by AssetLoader)
   Engine/              # Combat AI logic
@@ -149,7 +149,7 @@ IL evidence, version history, and incident reports: `docs/wrath-api-deep-dive.md
 
 ## Logs
 
-- **Mod session logs**: `<game>/Mods/WrathTactics/Logs/wrath-tactics-*.log` (separate from `Player.log`). Latest: `ssh deck-direct "ls -t '<game>/Mods/WrathTactics/Logs/' | head -1"`.
+- **Mod session logs**: `<game>/Mods/KingmakerTactics/Logs/wrath-tactics-*.log` (separate from `Player.log`). Latest: `ssh deck-direct "ls -t '<game>/Mods/KingmakerTactics/Logs/' | head -1"`.
 - Triage recipes ("rule didn't fire", preemption, deploy verification): `claude-context/triage.md`.
 - **„Wer hat mein Kommando unterbrochen?"**: `grep 'interrupted (started='` im Mod-Log — `CommandDiagnostics` loggt Aufrufer-Frames und die drei `TickCommand`-Interrupt-Eingaben. `EXECUTED` belegt nur die Ausgabe, `ended: Success` den Effekt (`triage.md`).
 
