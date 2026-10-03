@@ -65,22 +65,23 @@ namespace KingmakerTactics.UI {
 
             foreach (var cell in UnityEngine.Object.FindObjectsOfType<GroupCharacter>()) {
                 var c = cell;
-                EnsureBadge(c.transform, () => c == null ? null : c.Unit);
+                EnsureBadge(c.transform, c.Portrait?.Portrait?.rectTransform, () => c == null ? null : c.Unit);
             }
             foreach (var view in UnityEngine.Object.FindObjectsOfType<HudGroupCharacterView>()) {
                 var v = view;
-                EnsureBadge(v.transform, () => v == null ? null : v.ViewModel?.Unit);
+                EnsureBadge(v.transform, v.m_PortraitPartView?.m_Portrait?.rectTransform, () => v == null ? null : v.ViewModel?.Unit);
             }
         }
 
-        static void EnsureBadge(Transform cell, Func<UnitEntityData> unit) {
+        static void EnsureBadge(Transform cell, RectTransform portraitImage, Func<UnitEntityData> unit) {
             if (cell.Find(BadgeName) != null) return;
 
             var (go, rect) = UIHelpers.Create(BadgeName, cell);
-            rect.SetAnchor(0, 0, 1, 1); // point-anchor at the cell's top-left corner
+            rect.SetAnchor(0, 0, 1, 1); // point-anchor at the cell's top-left corner (fallback
+                                        // position until PortraitToggleBadge aligns it to the image)
             // 26 px: the 22 px Wrath size read too small on Kingmaker's ~110 px cells (deck
-            // screenshot 2026-10-03) and is hard to hit with the Steam Deck trackpad. Top-left is
-            // free: the HP bar starts below it, status icons sit top-right.
+            // screenshot 2026-10-03) and is hard to hit with the Steam Deck trackpad. The image's
+            // top-left is free: status/buff icons sit in the column right of the image.
             float size = 26f * UIHelpers.FontScale;
             rect.sizeDelta = new Vector2(size, size);
             rect.anchoredPosition = new Vector2(size * 0.5f + 2f, -(size * 0.5f + 2f));
@@ -90,7 +91,7 @@ namespace KingmakerTactics.UI {
             var label = Widgets.BandLabel(go, "T", 18f, TextAlignmentOptions.Midline);
 
             var badge = go.AddComponent<PortraitToggleBadge>();
-            badge.Init(unit, label);
+            badge.Init(unit, label, portraitImage);
             // A child Button is the nearest click handler, so the portrait's own
             // OnPointerClick (select unit / cast onto portrait) does not fire for this click.
             go.AddComponent<Button>().onClick.AddListener(badge.OnClick);
