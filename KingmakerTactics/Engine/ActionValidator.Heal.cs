@@ -17,10 +17,10 @@ using KingmakerTactics.Compatibility;
 
 namespace KingmakerTactics.Engine {
     public static partial class ActionValidator {
-        // GUID of CreatureAbilities/NegativeEnergyAffinity.jbp — the exact fact
-        // CureLightWounds.jbp's ContextConditionHasFact gates the heal-vs-damage flip on.
+        // Kingmaker has no NegativeEnergyAffinity feature (Wrath d5ee498e…) and no Dhampir race;
+        // undead carry the UndeadType feature (734a29b6…, kingmaker/il-dump/blueprints-index.tsv).
         // Resolved lazily through ResourcesLibrary; cached for the session.
-        const string NegativeEnergyAffinityGuid = "d5ee498e19722854198439629c1841a5";
+        const string NegativeEnergyAffinityGuid = "734a29b693e9ec346ba2951b27987e33"; // UndeadType
         static BlueprintFeature s_negativeEnergyAffinity;
         static bool s_negativeEnergyAffinityResolved;
 
@@ -29,24 +29,22 @@ namespace KingmakerTactics.Engine {
             try {
                 s_negativeEnergyAffinity = ResourcesLibrary.TryGetBlueprint<BlueprintFeature>(NegativeEnergyAffinityGuid);
                 if (s_negativeEnergyAffinity == null)
-                    Log.Engine.Warn($"NegativeEnergyAffinity blueprint {NegativeEnergyAffinityGuid} not found; falling back to feature-name detection.");
+                    Log.Engine.Warn($"UndeadType blueprint {NegativeEnergyAffinityGuid} not found; falling back to feature-name detection.");
             } catch (InvalidOperationException ex) {
                 // ResourcesLibrary throws this if accessed before BlueprintsCache is initialised.
                 // Other exceptions (NRE, etc.) indicate a real defect; let them propagate so we
                 // notice rather than permanently caching a missing blueprint.
-                Log.Engine.Error(ex, "NegativeEnergyAffinity blueprint lookup failed (engine not ready)");
+                Log.Engine.Error(ex, "UndeadType blueprint lookup failed (engine not ready)");
             }
             s_negativeEnergyAffinityResolved = true;
             return s_negativeEnergyAffinity;
         }
 
         /// <summary>
-        /// True when positive energy damages and negative energy heals this unit. Mirrors the
-        /// engine-authoritative check from CureLightWounds.jbp: ContextConditionHasFact on
-        /// blueprint <c>d5ee498e19722854198439629c1841a5</c> (NegativeEnergyAffinity). The
-        /// fact is added transitively to all vanilla undead via UndeadType → UndeadImmunities
-        /// → NegativeEnergyAffinity, and directly to Dhampir via NegativeEnergyAffinityDhampir.
-        /// Lich-MC picks it up post-LichTrueFeature through the same UndeadType chain.
+        /// True when positive energy damages and negative energy heals this unit, i.e. the unit
+        /// is undead: Kingmaker fact UndeadType (<c>734a29b693e9ec346ba2951b27987e33</c>).
+        /// Which fact Kingmaker's Cure spells test exactly is not readable (no blueprint
+        /// typetrees); UndeadType is the creature-type feature every undead carries.
         ///
         /// The legacy substring fallback on <c>Progression.Features</c> is kept as a defensive
         /// net for mod-added units that name their affinity feature "Dhampir*" or
@@ -69,7 +67,7 @@ namespace KingmakerTactics.Engine {
                 foreach (var fact in progression.Features.Enumerable) {
                     var fname = fact?.Blueprint?.name ?? "";
                     if (fname.IndexOf("NegativeEnergyAffinity", StringComparison.OrdinalIgnoreCase) >= 0
-                     || fname.IndexOf("Dhampir", StringComparison.OrdinalIgnoreCase) >= 0) {
+                     || fname.IndexOf("UndeadType", StringComparison.OrdinalIgnoreCase) >= 0) {
                         return true;
                     }
                 }

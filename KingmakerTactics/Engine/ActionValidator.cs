@@ -99,7 +99,10 @@ namespace KingmakerTactics.Engine {
                     // Self-heal when no explicit target is resolved — mirrors ExecuteHeal's
                     // `target ?? owner` fallback. Auto-mode reads the unit for affinity check.
                     var heal = FindBestHeal(owner, unit ?? owner, action.HealMode, action.HealSources, action.HealEnergy);
-                    if (heal == null) return false;
+                    if (heal == null) {
+                        Reject("no usable heal (no slot/resource left, none in quick slots; inventory only out of combat)");
+                        return false;
+                    }
                     abilitySlot = heal.RuntimeActionType;
                     return true;
                 }
