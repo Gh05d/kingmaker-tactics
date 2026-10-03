@@ -567,6 +567,7 @@ namespace KingmakerTactics.UI {
             var canvas = Kingmaker.Game.Instance.UI.Canvas.transform;
             var (overlay, overlayRect) = UIHelpers.Create(name, canvas);
             overlayRect.FillParent();
+            TmpRectSync.Attach(overlay);
             UIHelpers.AddBackground(overlay, Theme.DimPopup);
             var overlayBtn = overlay.AddComponent<Button>();
 
