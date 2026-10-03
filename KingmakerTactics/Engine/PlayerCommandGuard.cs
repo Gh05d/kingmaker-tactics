@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using KingmakerTactics.Compatibility;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.UnitLogic.Commands;
 using Kingmaker.UnitLogic.Commands.Base;
@@ -105,7 +106,9 @@ namespace KingmakerTactics.Engine {
         static bool IsPlayerWalk(UnitCommand cmd, HashSet<UnitCommand> ours) {
             if (!(cmd is UnitMoveTo move) || move.IsFinished) return false;
             if (ours != null && ours.Contains(cmd)) return false;
-            return move.AiAction == null && !move.AiCanInterruptMark;
+            // Kingmaker has no AiCanInterruptMark; a ground click sets CreatedByPlayer
+            // (engine-verification.md §10). A click on a friendly unit does not — accepted.
+            return move.AiAction == null && move.CreatedByPlayer;
         }
 
         // Standard-slot / queued UnitUseAbility that is neither ours nor the unit's
