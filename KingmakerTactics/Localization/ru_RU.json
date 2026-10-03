@@ -227,6 +227,7 @@
   "enum.action.DoNothing": "Бездействовать",
   "enum.action.ThrowSplash": "Метнуть",
   "enum.action.SwitchWeaponSet": "Сменить оружие",
+  "enum.action.MoveToTarget": "Подойти к цели",
   "weapon_set.label": "Набор {0}",
 
   "enum.target.Self": "Себя",
