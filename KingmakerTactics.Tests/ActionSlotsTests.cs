@@ -78,30 +78,33 @@ namespace KingmakerTactics.Tests {
             Assert.False(ActionSlots.IsGated(null));
         }
 
-        // --- Pending ActivateWithUnitCommand activations (Kingmaker) ----------------------
+        // --- Activatables with a start command (Kingmaker bardic performance) ---------------
 
-        // KM IL ActivatableAbility.HandleUnitRunCommand: another command of the activation's
-        // type switches the activatable off before it started; Standard/Move also remove the
-        // paired slot, which ends the not-yet-acted activation command (HandleUnitCommandDidEnd).
+        // KM IL ActivatableAbility.HandleUnitRunCommand: while IsOn, ANY command the unit runs
+        // whose Type equals the activatable's ActivatableAbilityUnitCommand.Type switches it off
+        // (no IsRunning check). While still pending, a Standard/Move command additionally
+        // removes the paired, not-yet-acted activation command (HandleUnitCommandDidEnd).
         [Theory]
-        [InlineData(UnitCommand.CommandType.Standard, new[] { UnitCommand.CommandType.Standard, UnitCommand.CommandType.Move })]
-        [InlineData(UnitCommand.CommandType.Move, new[] { UnitCommand.CommandType.Move, UnitCommand.CommandType.Standard })]
-        [InlineData(UnitCommand.CommandType.Swift, new[] { UnitCommand.CommandType.Swift })]
-        [InlineData(UnitCommand.CommandType.Free, new[] { UnitCommand.CommandType.Free })]
-        public void pending_activation_holds_its_slot_and_the_paired_one(UnitCommand.CommandType activation, UnitCommand.CommandType[] expected) {
-            Assert.Equal(expected, ActionSlots.HeldByPendingActivation(activation));
+        [InlineData(UnitCommand.CommandType.Standard, false, new[] { UnitCommand.CommandType.Standard, UnitCommand.CommandType.Move })]
+        [InlineData(UnitCommand.CommandType.Move, false, new[] { UnitCommand.CommandType.Move, UnitCommand.CommandType.Standard })]
+        [InlineData(UnitCommand.CommandType.Swift, false, new[] { UnitCommand.CommandType.Swift })]
+        [InlineData(UnitCommand.CommandType.Standard, true, new[] { UnitCommand.CommandType.Standard })]
+        [InlineData(UnitCommand.CommandType.Move, true, new[] { UnitCommand.CommandType.Move })]
+        public void activation_holds_its_type_and_while_pending_the_paired_slot(UnitCommand.CommandType activation, bool running, UnitCommand.CommandType[] expected) {
+            Assert.Equal(expected, ActionSlots.HeldByActivation(activation, running));
         }
 
         [Theory]
         [InlineData(true, false, true, true, 1f, true)]    // switched on, waiting for its command
-        [InlineData(true, true, true, true, 1f, false)]    // already running
+        [InlineData(true, true, true, true, 1f, true)]     // running — any same-type command would end it
+        [InlineData(true, true, true, false, 30f, true)]   // running long after turn-on: still protected
         [InlineData(false, false, true, true, 1f, false)]  // off
-        [InlineData(true, false, false, true, 1f, false)]  // no start command needed (e.g. Power Attack)
-        [InlineData(true, false, true, false, 1f, false)]  // not available — the engine will never start it
-        [InlineData(true, false, true, true, 7f, false)]   // waited longer than a round — stop holding
-        public void activation_is_pending_only_while_it_can_still_start(bool isOn, bool isRunning, bool activateWithCommand,
+        [InlineData(true, false, false, true, 1f, false)]  // no start command (e.g. Power Attack)
+        [InlineData(true, false, true, false, 1f, false)]  // pending but unavailable — the engine will never start it
+        [InlineData(true, false, true, true, 7f, false)]   // pending longer than a round — stop holding
+        public void activation_holds_while_on_and_either_running_or_still_able_to_start(bool isOn, bool isRunning, bool hasStartCommand,
                 bool isAvailable, float secondsSinceTurnOn, bool expected) {
-            Assert.Equal(expected, ActionSlots.IsActivationPending(isOn, isRunning, activateWithCommand, isAvailable, secondsSinceTurnOn));
+            Assert.Equal(expected, ActionSlots.IsActivationHolding(isOn, isRunning, hasStartCommand, isAvailable, secondsSinceTurnOn));
         }
 
         // --- IssuesAnimatedCommand -------------------------------------------------------

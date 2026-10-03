@@ -175,24 +175,25 @@ namespace KingmakerTactics.Engine {
             TryExecuteRules(charRules, unit, RuleListSource.Character, gameTimeSec, inCombat, charGate, tick);
         }
 
-        // Kingmaker: keeps the slots of every pending ActivateWithUnitCommand activation free for
-        // this tick (see ActionSlots.HeldByPendingActivation / IsActivationPending).
+        // Kingmaker: keeps the slots of every on/pending activatable with a start command free for
+        // this tick, so a lower rule cannot switch a bardic performance off (see
+        // ActionSlots.HeldByActivation / IsActivationHolding). Policy: a performance that is on
+        // wins over every rule that would end it.
         static void HoldPendingActivationSlots(UnitEntityData unit, UnitTickState tick) {
             var now = Game.Instance.TimeController.RealTime;
             foreach (var activatable in unit.ActivatableAbilities.Enumerable) {
                 var bp = activatable.Blueprint;
-                if (bp == null || !activatable.IsOn || activatable.IsRunning) continue;
+                if (bp == null || !activatable.IsOn) continue;
                 var startCommand = bp.GetComponent<ActivatableAbilityUnitCommand>();
                 float sinceOn = (float)(now - activatable.m_TurnOnTime).TotalSeconds;
-                if (startCommand == null
-                    || !ActionSlots.IsActivationPending(activatable.IsOn, activatable.IsRunning,
-                        bp.ActivateWithUnitCommand, activatable.IsAvailable, sinceOn)) {
+                if (!ActionSlots.IsActivationHolding(activatable.IsOn, activatable.IsRunning,
+                        startCommand != null, activatable.IsAvailable, sinceOn)) {
                     continue;
                 }
-                foreach (var held in ActionSlots.HeldByPendingActivation(startCommand.Type)) {
+                foreach (var held in ActionSlots.HeldByActivation(startCommand.Type, activatable.IsRunning)) {
                     if (!tick.SlotUsed[(int)held]) {
                         tick.SlotUsed[(int)held] = true;
-                        Log.Engine.Trace($"{unit.CharacterName}: slot {held} held for pending activation {bp.name} ({sinceOn:F1}s)");
+                        Log.Engine.Trace($"{unit.CharacterName}: slot {held} held for activatable {bp.name} (running={activatable.IsRunning}, {sinceOn:F1}s)");
                     }
                 }
             }

@@ -62,32 +62,31 @@ namespace KingmakerTactics.Engine {
         }
 
         /// <summary>
-        /// Slots a pending ActivateWithUnitCommand activation (Kingmaker bardic performance etc.)
-        /// must keep free. KM IL ActivatableAbility.HandleUnitRunCommand switches the activatable
-        /// off when the unit runs another command of the activation's type before it started,
-        /// and a Standard/Move command also removes the paired slot's not-yet-acted activation
-        /// command, which HandleUnitCommandDidEnd turns into IsOn = false as well.
+        /// Slots an activatable with a start command (Kingmaker bardic performance) must keep free.
+        /// KM IL ActivatableAbility.HandleUnitRunCommand: while IsOn, any command the unit runs
+        /// whose Type equals the activatable's ActivatableAbilityUnitCommand.Type switches it off
+        /// — running or not. While the activation is still pending, a Standard/Move command also
+        /// removes the paired, not-yet-acted activation command, which HandleUnitCommandDidEnd
+        /// turns into IsOn = false as well.
         /// </summary>
-        internal static UnitCommand.CommandType[] HeldByPendingActivation(UnitCommand.CommandType activationType) {
-            switch (activationType) {
-                case UnitCommand.CommandType.Standard:
-                    return new[] { UnitCommand.CommandType.Standard, UnitCommand.CommandType.Move };
-                case UnitCommand.CommandType.Move:
-                    return new[] { UnitCommand.CommandType.Move, UnitCommand.CommandType.Standard };
-                default:
-                    return new[] { activationType };
-            }
+        internal static UnitCommand.CommandType[] HeldByActivation(UnitCommand.CommandType activationType, bool running) {
+            if (!running && activationType == UnitCommand.CommandType.Standard)
+                return new[] { UnitCommand.CommandType.Standard, UnitCommand.CommandType.Move };
+            if (!running && activationType == UnitCommand.CommandType.Move)
+                return new[] { UnitCommand.CommandType.Move, UnitCommand.CommandType.Standard };
+            return new[] { activationType };
         }
 
         /// <summary>
-        /// An activatable is "pending" while it is switched on but not yet running, needs a unit
-        /// command to start, can still start (available), and was switched on less than one
-        /// round (6 s) ago. The time cap keeps an activation the engine never starts from
-        /// blocking the unit's other rules for the rest of the fight.
+        /// An activatable with a start command holds its slots while it is on and either running
+        /// or still able to start: available and switched on less than one round (6 s) ago. The
+        /// time cap keeps an activation the engine never starts from blocking the unit's other
+        /// rules for the rest of the fight.
         /// </summary>
-        internal static bool IsActivationPending(bool isOn, bool isRunning, bool activateWithCommand,
+        internal static bool IsActivationHolding(bool isOn, bool isRunning, bool hasStartCommand,
             bool isAvailable, float secondsSinceTurnOn) {
-            return isOn && !isRunning && activateWithCommand && isAvailable && secondsSinceTurnOn < 6f;
+            if (!isOn || !hasStartCommand) return false;
+            return isRunning || (isAvailable && secondsSinceTurnOn < 6f);
         }
 
         /// <summary>
