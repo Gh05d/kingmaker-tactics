@@ -24,6 +24,25 @@ namespace KingmakerTactics.UI {
         string lastNonPresetUnitId; // last selected character/global tab (skips both "presets" and "packs")
         Transform ruleListContent; // parent for rule cards
         ScrollRect ruleScrollRect;
+        VerticalLayoutGroup ruleListLayout;
+        static readonly RectOffset RuleListPadding = new RectOffset(4, 4, 4, 4);
+
+        // Up/Down: the moved rule's card is kept at its screen position across the rebuild,
+        // otherwise the cursor ends up on the swapped neighbour's arrow and a second click
+        // moves the rule back (Deck report 2026-10-06). Set by RuleEditorWidget.MoveRule and
+        // applied by every RefreshRuleList of the same frame: on the Global tab PersistEdit
+        // already rebuilds once before onChanged rebuilds again.
+        static TacticsRule anchorRule;
+        static int anchorFrame = -1;
+        static float anchorTopWorldY;
+        static readonly Vector3[] anchorCorners = new Vector3[4];
+
+        public static void KeepCardInPlace(TacticsRule rule, RectTransform card) {
+            card.GetWorldCorners(anchorCorners);
+            anchorRule = rule;
+            anchorFrame = Time.frameCount;
+            anchorTopWorldY = anchorCorners[1].y;
+        }
         GameObject toggleSlot;
         Transform tabBarTransform; // reference to rebuild tabs
 
@@ -427,7 +446,8 @@ namespace KingmakerTactics.UI {
             vlg.childForceExpandHeight = false;
             vlg.childControlHeight = true;
             vlg.childControlWidth = true;
-            vlg.padding = new RectOffset(4, 4, 4, 4);
+            vlg.padding = new RectOffset(RuleListPadding.left, RuleListPadding.right, RuleListPadding.top, RuleListPadding.bottom);
+            ruleListLayout = vlg;
 
             var csf = content.AddComponent<ContentSizeFitter>();
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -478,7 +498,12 @@ namespace KingmakerTactics.UI {
         }
 
         void RefreshRuleList() {
+            var anchor = anchorFrame == Time.frameCount ? anchorRule : null;
             if (ruleListContent == null) return;
+            // Drop the gap a previous anchor added (ScrollAnchor) — it only has to hold
+            // until the next rebuild.
+            if (ruleListLayout != null)
+                ruleListLayout.padding = new RectOffset(RuleListPadding.left, RuleListPadding.right, RuleListPadding.top, RuleListPadding.bottom);
 
             // Clear existing cards (this destroys any prior PresetPanel too). Detach
             // first so the same-frame ApplyFilter pass and VLG layout only see live
@@ -552,6 +577,29 @@ namespace KingmakerTactics.UI {
             }
 
             ApplyFilter();
+            if (anchor != null) AnchorCard(anchor, anchorTopWorldY);
+        }
+
+        // Synchronous so the first rendered frame already shows the moved card in place.
+        void AnchorCard(TacticsRule rule, float oldTopWorldY) {
+            if (ruleScrollRect == null || ruleListLayout == null) return;
+            RuleEditorWidget card = null;
+            foreach (var w in ruleListContent.GetComponentsInChildren<RuleEditorWidget>()) {
+                if (w.Rule == rule) { card = w; break; }
+            }
+            if (card == null) return;
+
+            Canvas.ForceUpdateCanvases();   // lay out the rebuilt cards before measuring
+            ((RectTransform)card.transform).GetWorldCorners(anchorCorners);
+            var content = ruleScrollRect.content;
+            float shift = content.InverseTransformVector(new Vector3(0f, oldTopWorldY - anchorCorners[1].y, 0f)).y;
+            var r = ScrollAnchor.Keep(content.anchoredPosition.y, shift, content.rect.height, ruleScrollRect.viewport.rect.height);
+
+            ruleListLayout.padding = new RectOffset(RuleListPadding.left, RuleListPadding.right,
+                RuleListPadding.top + Mathf.RoundToInt(r.PadTop), RuleListPadding.bottom + Mathf.RoundToInt(r.PadBottom));
+            ruleScrollRect.StopMovement();
+            content.anchoredPosition = new Vector2(content.anchoredPosition.x, r.ScrollY);
+            Canvas.ForceUpdateCanvases();   // apply the padding in this frame
         }
 
         // Global-tab setting row: shows/hides the HUD button (controller players have no

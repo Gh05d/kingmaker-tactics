@@ -57,8 +57,9 @@ namespace KingmakerTactics.UI {
             if (canPromote)
                 Widgets.InlineLink(header.transform, "Promote", "button.promote_to_preset".i18n(), () => PromoteToPreset(), onBand: true, fontSize: 13f);
 
-            Widgets.IconButton(header.transform, "Up", Icon.ArrowUp, Theme.IconSmall, () => MoveRule(-1), Theme.Ink);
-            Widgets.IconButton(header.transform, "Down", Icon.ArrowDown, Theme.IconSmall, () => MoveRule(1), Theme.Ink);
+            // IconMedium: the 21 px arrows were hard to hit with the Deck trackpad (2026-10-06).
+            Widgets.IconButton(header.transform, "Up", Icon.ArrowUp, Theme.IconMedium, () => MoveRule(-1), Theme.Ink);
+            Widgets.IconButton(header.transform, "Down", Icon.ArrowDown, Theme.IconMedium, () => MoveRule(1), Theme.Ink);
             Widgets.IconButton(header.transform, "Del", Icon.Delete, Theme.IconMedium, () => DeleteRule());
         }
 

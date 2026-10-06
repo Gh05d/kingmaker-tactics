@@ -232,6 +232,7 @@ namespace KingmakerTactics.UI {
         void MoveRule(int direction) {
             int newIndex = index + direction;
             if (newIndex < 0 || newIndex >= ruleList.Count) return;
+            TacticsPanel.KeepCardInPlace(rule, (RectTransform)transform);
             ruleList.RemoveAt(index);
             ruleList.Insert(newIndex, rule);
             PersistEdit();

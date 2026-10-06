@@ -8,6 +8,7 @@ Operative rules for `UI/` (TacticsPanel, RuleEditorWidget, ConditionRowWidget, P
 
 - **Unity Rebuild pattern**: `Destroy()` on VLG/CSF is deferred — use `DestroyImmediate()` for layout components in `Rebuild()` to avoid duplicate layout calculators for one frame.
 - **Clear-then-rescan: detach before `Destroy()`** — `Destroy()` lands end-of-frame; if the same frame re-iterates the container's children (`RefreshRuleList` → `ApplyFilter`), doomed cards still get counted. Fix: `SetParent(null, false)` before `Destroy`. NOT `SetActive(false)`+Destroy — `ApplyFilter` re-activates matching doomed cards.
+- **Rebuild after a click moves things under the cursor**: `RefreshRuleList` rebuilds every card and keeps only the scroll offset, so a reordered card lands elsewhere and the next click hits the neighbour's button (Up/Down, Deck 2026-10-06). `TacticsPanel.KeepCardInPlace` + `ScrollAnchor` re-anchor the moved card in the same frame (scroll first, then VLG padding where the scroll range ends). Any new "click → reorder/insert → rebuild" control should anchor the same way.
 - **Nested ScrollRects**: Inner steals scroll events from outer. Disable `inner.ScrollRect.enabled` unless content overflows; re-enable conditionally in `UpdateHeight()`.
 
 ## Widgets & Helpers
