@@ -48,12 +48,17 @@ namespace KingmakerTactics {
 
         static void OnUpdate(UnityModManager.ModEntry modEntry, float delta) {
             if (Game.Instance?.Player == null) return;
+            var loading = Kingmaker.EntitySystem.Persistence.LoadingProcess.Instance;
+            Logging.FrameProbe.BeginFrame(Time.unscaledDeltaTime, loading != null && loading.IsLoadingInProcess);
+            var t = Logging.FrameProbe.Start();
             try {
                 float gameTime = (float)Game.Instance.Player.GameTime.TotalSeconds;
                 Engine.TacticsEvaluator.Tick(gameTime);
             } catch (Exception ex) {
                 Logging.Log.Engine.Error(ex, "Tick error");
             }
+            Logging.FrameProbe.Add(Logging.FrameProbe.Section.Tick, t);
+            t = Logging.FrameProbe.Start();
             // One-time buff-index warm: serves the disk cache or drains a chunked full
             // pack scan across frames (hidden in the post-load window). Self-guards after
             // completion, so this is a cheap no-op every frame thereafter.
@@ -63,11 +68,14 @@ namespace KingmakerTactics {
             } catch (Exception ex) {
                 Logging.Log.Engine.Error(ex, "Buff pack scan error");
             }
+            Logging.FrameProbe.Add(Logging.FrameProbe.Section.BuffScan, t);
+            t = Logging.FrameProbe.Start();
             try {
                 UI.PortraitToggleOverlay.Sync(delta);
             } catch (Exception ex) {
                 Logging.Log.UI.Error(ex, "Portrait toggle sync error");
             }
+            Logging.FrameProbe.Add(Logging.FrameProbe.Section.Overlay, t);
         }
 
         static void OnGUI(UnityModManager.ModEntry modEntry) {

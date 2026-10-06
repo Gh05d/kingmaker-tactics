@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HarmonyLib;
 using Kingmaker;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.UI.Group;
@@ -10,33 +11,38 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace KingmakerTactics.UI {
-    // Attaches a PortraitToggleBadge to every party portrait cell of Kingmaker's legacy UI.
-    // Discovery is component-type based (cells are prefab clones, no stable name path) and
-    // throttled; per-frame work is only the cheap state refresh. Polling instead of a
-    // Harmony postfix on GroupCharacter.Initialize: survives canvas rebuilds on area/save
-    // load without depending on which init path the game takes.
+    // Attaches a PortraitToggleBadge to every party portrait cell of Kingmaker's UI. Cells
+    // announce themselves through Harmony postfixes on their bind methods and are queued;
+    // Sync attaches badges to queued cells on the main thread, per-frame work is only the
+    // cheap state refresh. NEVER discover cells with Object.FindObjectsOfType: Kingmaker
+    // keeps the whole blueprint library resident, a single scan costs ~90 ms on the deck and
+    // the former 1 s poll (two scans) was a 185 ms hitch every second (Nexus report
+    // 2026-10-06, FrameProbe "discover" section).
     //
     // Two view trees (IL, kingmaker/il-dump):
-    // - PC/mouse HUD: GroupController owns six Kingmaker.UI.Group.GroupCharacter cells
-    //   (also GlobalMapGroupCharacter), unit = CharacterBase.Unit, re-bound in SetGroup.
-    // - Controller UI: HudGroupView builds one HudGroupCharacterView per character,
-    //   unit = ViewModel.Unit (ViewModel is protected — publicized Assembly-CSharp).
+    // - PC/mouse HUD: GroupController.SetGroup → GroupCharacter.Initialize(unit, index) for
+    //   each of its six cells, also on the global map (GlobalMapGroupCharacter does not
+    //   override it). Unit = CharacterBase.Unit, re-bound on every Initialize.
+    // - Controller UI: HudGroupView builds one HudGroupCharacterView per character and calls
+    //   Bind(GroupCharacterVM) (GlobalMapHudGroupCharacterView.Bind calls base). Unit =
+    //   ViewModel.Unit (ViewModel is protected — publicized Assembly-CSharp).
+    // Re-binds re-queue the same cell; EnsureBadge skips cells that already carry a badge.
     // The in-game HUD never lists pets (GroupController uses UIUtility.GetGroup(_, WithPet)
     // with WithPet only for inventory/character/spellbook screens), so pets are toggled in
     // the panel only.
     public static class PortraitToggleOverlay {
         const string BadgeName = "KT_PortraitToggle";
-        const float DiscoveryInterval = 1f;
-        static float discoveryTimer;
         static readonly List<PortraitToggleBadge> badges = new List<PortraitToggleBadge>();
+        static readonly List<GroupCharacter> pendingCells = new List<GroupCharacter>();
+        static readonly List<HudGroupCharacterView> pendingViews = new List<HudGroupCharacterView>();
 
         public static void Sync(float delta) {
             if (Game.Instance?.UI?.Canvas == null) return;
 
-            discoveryTimer -= delta;
-            if (discoveryTimer <= 0f) {
-                discoveryTimer = DiscoveryInterval;
-                Discover();
+            if (pendingCells.Count > 0 || pendingViews.Count > 0) {
+                var t = Logging.FrameProbe.Start();
+                AttachPending();
+                Logging.FrameProbe.Add(Logging.FrameProbe.Section.Discover, t);
             }
 
             bool show = ConfigManager.Current.ShowPortraitToggles;
@@ -55,22 +61,37 @@ namespace KingmakerTactics.UI {
                     UnityEngine.Object.Destroy(badges[i].gameObject);
             }
             badges.Clear();
-            discoveryTimer = 0f;
+            pendingCells.Clear();
+            pendingViews.Clear();
         }
 
-        static void Discover() {
+        static void AttachPending() {
             // FontScale is refreshed lazily by TacticsPanel.Toggle(); badges are usually
             // created before the panel was ever opened.
             UIHelpers.RefreshFontScale();
 
-            foreach (var cell in UnityEngine.Object.FindObjectsOfType<GroupCharacter>()) {
+            foreach (var cell in pendingCells) {
+                if (cell == null) continue; // destroyed before this frame
                 var c = cell;
                 EnsureBadge(c.transform, c.Portrait?.Portrait?.rectTransform, () => c == null ? null : c.Unit);
             }
-            foreach (var view in UnityEngine.Object.FindObjectsOfType<HudGroupCharacterView>()) {
+            pendingCells.Clear();
+            foreach (var view in pendingViews) {
+                if (view == null) continue;
                 var v = view;
                 EnsureBadge(v.transform, v.m_PortraitPartView?.m_Portrait?.rectTransform, () => v == null ? null : v.ViewModel?.Unit);
             }
+            pendingViews.Clear();
+        }
+
+        [HarmonyPatch(typeof(GroupCharacter), nameof(GroupCharacter.Initialize), new[] { typeof(UnitEntityData), typeof(int) })]
+        static class GroupCharacterInitializePatch {
+            static void Postfix(GroupCharacter __instance) => pendingCells.Add(__instance);
+        }
+
+        [HarmonyPatch(typeof(HudGroupCharacterView), nameof(HudGroupCharacterView.Bind))]
+        static class HudGroupCharacterViewBindPatch {
+            static void Postfix(HudGroupCharacterView __instance) => pendingViews.Add(__instance);
         }
 
         static void EnsureBadge(Transform cell, RectTransform portraitImage, Func<UnitEntityData> unit) {

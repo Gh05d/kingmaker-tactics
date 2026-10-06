@@ -56,6 +56,10 @@ Presets, die nach der Zuweisung ins Pack kommen, erscheinen erst nach erneutem *
 
 Das Pack danach von der Figur abziehen — `CooldownRounds: 0` + leere Conditions heißt sonst jede Runde in jedem Kampf.
 
+## Stutter / "Game Lags with the Mod"
+
+- **`Logging/FrameProbe`** times the mod's per-frame sections (tick, buff scan, portrait overlay) and checks `GC.CollectionCount(0)`. Every 60 s it writes `Perf 60s: … slow …, mod avg/max ms: …`, and a `Slow frame N ms: mod X ms (…)` line whenever a frame ≥ 50 ms had ≥ 5 ms of mod work. `grep 'Perf \|Slow frame'` in the mod log: a section max in the hundreds of ms is the culprit. Slow frames with mod ≈ 0 are the game's own (baseline ~10–30 per minute on the deck).
+
 ## Silent Freezes
 
 - **Panel rendered but unresponsive, no log output** ⇒ suspect `StackOverflowException` (uncatchable, kills Unity main thread silently). Diagnose via code search for self-recursion, not via logs — see [`gotchas-persistence.md`](gotchas-persistence.md) (`PersistEdit` precedent).
