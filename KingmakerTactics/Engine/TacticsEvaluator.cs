@@ -16,6 +16,7 @@ using KingmakerTactics.Persistence;
 namespace KingmakerTactics.Engine {
     public static class TacticsEvaluator {
         static float lastTickTime;
+        static float lastTickRealTime = float.NegativeInfinity;
         static float combatStartTime;
         static bool wasInCombat;
         static bool forceNextTick;
@@ -97,8 +98,14 @@ namespace KingmakerTactics.Engine {
                 ? config.TickIntervalSeconds
                 : config.OutOfCombatTickIntervalSeconds;
             if (!forceNextTick && gameTimeSec - lastTickTime < interval) return;
+            // Global map travel and resting advance game time by ~80 s per frame, which made
+            // the game-time interval pass every frame (60 evaluations/s, deck log 2026-10-03).
+            // Out of combat the interval is therefore also a real-time floor.
+            float realTime = UnityEngine.Time.unscaledTime;
+            if (!forceNextTick && !inCombat && realTime - lastTickRealTime < interval) return;
             forceNextTick = false;
             lastTickTime = gameTimeSec;
+            lastTickRealTime = realTime;
 
             tickCounter++;
             int evaluableUnits = 0;
@@ -548,6 +555,7 @@ namespace KingmakerTactics.Engine {
 
         public static void Reset() {
             lastTickTime = 0;
+            lastTickRealTime = float.NegativeInfinity;
             combatStartTime = 0;
             wasInCombat = false;
             forceNextTick = false;
