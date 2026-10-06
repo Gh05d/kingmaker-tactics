@@ -44,6 +44,8 @@ Operative rules for `TacticsEvaluator`, `ActionValidator`, `CommandExecutor`, `P
 
 - No per-round EventBus events in RTWP mode — use `Game.Instance.Player.GameTime` in `Update()`.
 - **Continuous out-of-combat tick (since 1.7.0)**: `TacticsEvaluator.Tick` runs in both states. Out-of-combat interval = `TacticsConfig.OutOfCombatTickIntervalSeconds` (default 2 s, JSON-only), pre-filtered through `RuleEnabledOutOfCombat`. Cooldown clock = `CooldownRounds * 6f` against `GameTime.TotalSeconds`; same clock in RTWP and turn-based. ([deep-dive](../docs/wrath-api-deep-dive.md#continuous-out-of-combat-tick-since-170))
+- **Out-of-combat interval is also a real-time floor (Kingmaker)**: global map travel and resting advance `GameTime` by ~80 s per frame, so a pure game-time interval passed every frame (60 evaluations/s, 420 log lines/s, deck 2026-10-03). `TacticsEvaluator.Tick` requires `Time.unscaledTime` spacing too when out of combat; in combat game time is the only clock.
+- **Kingmaker: never scan with `Object.FindObjectsOfType` or `AccessTools.TypeByName` at runtime.** The whole blueprint library is resident, so one `FindObjectsOfType` costs ~90 ms on the deck (the 1 s portrait-cell poll was a 185 ms hitch every second, Nexus report 2026-10-06), and `TypeByName` walks every type of every assembly (0.56 s freeze on the first combat start in `BuffBotCompat`). Use Harmony postfixes on the bind methods (`PortraitToggleOverlay`) or a known assembly (`ModEntry.Assembly.GetType`).
 
 ## Blueprint Infrastructure & Misc
 

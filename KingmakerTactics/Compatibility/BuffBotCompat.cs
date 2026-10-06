@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using HarmonyLib;
 using KingmakerTactics.Logging;
 using UnityModManagerNet;
 
@@ -25,7 +24,10 @@ namespace KingmakerTactics.Compatibility {
             try {
                 var entry = UnityModManager.FindMod(ModId);
                 if (entry == null || !entry.Active) return;
-                var castOnStart = ReadCastCombatStart(AccessTools.TypeByName(MainType));
+                // Look the type up in Buff Bot's own assembly. AccessTools.TypeByName walks every
+                // type of every loaded assembly: 0.56 s freeze on the first combat start (deck
+                // FrameProbe 2026-10-06).
+                var castOnStart = ReadCastCombatStart(entry.Assembly?.GetType(MainType));
                 Log.Compat.Info($"Buff Bot detected (castCombatStart={(castOnStart.HasValue ? castOnStart.Value.ToString() : "unknown")})");
                 if (castOnStart == true)
                     Log.Compat.Warn("Buff Bot casts buffs on combat start: tactics rules casting the same buffs at combat start spend the slot twice");
