@@ -87,6 +87,13 @@ namespace KingmakerTactics.Engine {
                 return null;
             }
 
+            // Cantrips: Kingmaker keeps them in the book's level-0 known list, but the book copy is
+            // slot-bound — GetAvailableForCastSpellCount has no cantrip sentinel (unlike Wrath) and
+            // m_SpontaneousSlots[0] / memorized level-0 slots stay 0, so it never passes
+            // HasCastableSlot. Each cantrip is also a unit Ability fact without a spellbook
+            // (at will); the action bar casts that one (ActionBarGroupElement.FillSlots filters
+            // owner.Abilities by IsCantrip). Skipping the book copies lands the lookup on the
+            // fact in the owner.Abilities loop below.
             foreach (var book in owner.Spellbooks()) {
                 int minLvl = parsed.Level >= 0 ? parsed.Level : 0;
                 int maxLvl = parsed.Level >= 0 ? parsed.Level : book.MaxSpellLevel;
@@ -94,6 +101,7 @@ namespace KingmakerTactics.Engine {
                     foreach (var spell in book.GetKnownSpells(level)) {
                         if (spell.Blueprint.AssetGuid.ToString() != parsed.BlueprintGuid) continue;
                         if (parsed.MetamagicMask != 0) continue; // metamagic → custom spells path only
+                        if (spell.Blueprint.IsCantrip) continue; // cast from the unit fact, see below
 
                         var hit = Consider(spell, out bool synthetic);
                         if (hit != null) { isSynthetic = synthetic; return hit; }
@@ -112,6 +120,7 @@ namespace KingmakerTactics.Engine {
                     foreach (var spell in book.GetSpecialSpells(level)) {
                         if (spell.Blueprint.AssetGuid.ToString() != parsed.BlueprintGuid) continue;
                         if (parsed.MetamagicMask != 0) continue;
+                        if (spell.Blueprint.IsCantrip) continue;
 
                         var hit = Consider(spell, out bool synthetic);
                         if (hit != null) { isSynthetic = synthetic; return hit; }
@@ -177,7 +186,7 @@ namespace KingmakerTactics.Engine {
         /// Slot probe goes through ConvertedFrom: Spellbook::GetAvailableForCastSpellCount
         /// compares blueprint refs strictly (IL_0056-0061), and variant/conversion AbilityData
         /// carries the variant blueprint while the prepared slot is keyed on the parent.
-        /// != 0 (not > 0): cantrips return the -1 sentinel.
+        /// Cantrips never reach this gate (FindAbilityEx resolves them to the unit fact).
         /// </summary>
         internal static bool HasCastableSlot(AbilityData ability) {
             var forSlots = ability.ConvertedFrom ?? ability;

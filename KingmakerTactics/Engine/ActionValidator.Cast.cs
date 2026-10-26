@@ -84,7 +84,7 @@ namespace KingmakerTactics.Engine {
             if (wantSpell) {
                 var ability = FindAbility(owner, compoundKey);
                 if (ability != null && ability.Spellbook != null) {
-                    // Slot/availability semantics (ConvertedFrom probe, cantrip -1 sentinel):
+                    // Slot/availability semantics (ConvertedFrom probe; cantrips arrive as unit facts):
                     // see HasCastableSlot — the shared gate FindAbilityEx also scans with.
                     // ConvertedFrom is the public property, not the m_ConvertedFrom field:
                     // field access requires the publicizer at test runtime and breaks Mono's

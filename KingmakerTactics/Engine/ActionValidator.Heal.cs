@@ -124,8 +124,9 @@ namespace KingmakerTactics.Engine {
 
             // Search spellbooks for cure/heal spells. Iterates known + special lists; the
             // latter covers Cleric domain Cure spells, Life-spirit Shaman heals, etc.
-            // GetAvailableForCastSpellCount returns -1 for cantrips (unlimited); 0 means
-            // no slot or spell-not-in-book.
+            // GetAvailableForCastSpellCount: 0 means no slot or spell-not-in-book. Kingmaker has
+            // no cantrip sentinel — book copies of cantrips read 0; their at-will unit facts
+            // are picked up by the class-ability scan below.
             if (wantSpell) foreach (var book in owner.Spellbooks()) {
                 int maxLevel = book.MaxSpellLevel;
                 for (int level = 0; level <= maxLevel; level++) {
