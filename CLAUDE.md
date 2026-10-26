@@ -122,6 +122,8 @@ Detailed gotchas live in `claude-context/` — **read the matching file BEFORE e
 | Test suite, mono runner, Deck smoke-test pack | `claude-context/testing.md` |
 | Why a Top Gotcha exists (dated regressions) | `claude-context/incidents.md` |
 
+Engine-Aussagen in diesen Topic-Dateien stammen oft noch aus Wrath: Bevor ein Bug auf einer davon aufbaut, gegen `il-dump/ilm.py m <Klasse> <Methode>` prüfen (2026-10-26: Cantrip-Sentinel war Wrath-only).
+
 IL evidence, version history, and incident reports (Wrath era): `docs/wrath-api-deep-dive.md`. Kingmaker: `../claude-context/engine-verification.md`.
 
 **Maintenance rule:** new gotcha → matching topic file. This file only gets a one-liner if violating the rule causes silent corruption (§Top Gotchas). Update the table only if the routing itself changes.
