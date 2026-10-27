@@ -19,6 +19,7 @@ namespace KingmakerTactics.UI {
         List<TacticsRule> ruleList;
         Action onChanged;
         string unitId;
+        bool editsPreset;   // PresetPanel's inline editor: PersistEdit saves the preset file
         bool hideHeader;  // when true, skip the list-entry header (used by the preset editor)
 
         GameObject enabledDot;
@@ -37,13 +38,14 @@ namespace KingmakerTactics.UI {
         TextMeshProUGUI spellPickerLabel;
         List<SpellDropdownProvider.SpellEntry> currentSpellEntries;
 
-        public void Init(TacticsRule rule, int index, List<TacticsRule> ruleList, Action onChanged, string unitId = null, bool hideHeader = false) {
+        public void Init(TacticsRule rule, int index, List<TacticsRule> ruleList, Action onChanged, string unitId = null, bool hideHeader = false, bool editsPreset = false) {
             this.rule = rule;
             this.index = index;
             this.ruleList = ruleList;
             this.onChanged = onChanged;
             this.unitId = unitId;
             this.hideHeader = hideHeader;
+            this.editsPreset = editsPreset;
             BuildUI();
         }
 
@@ -267,18 +269,21 @@ namespace KingmakerTactics.UI {
         }
 
         /// <summary>
-        /// Persists a field edit based on the widget's mode. When unitId is null the widget is
-        /// editing a preset directly (from PresetPanel), so the preset file must be saved via
-        /// PresetRegistry; ConfigManager.Save would write the character-rules config, which
-        /// doesn't contain the preset body. Without this split, preset edits silently reset
-        /// after a reload because only the character config got touched.
+        /// Persists a field edit based on the widget's mode. In preset mode (PresetPanel) the
+        /// widget edits a preset directly, so the preset file must be saved via PresetRegistry;
+        /// ConfigManager.Save would write the per-save config, which doesn't contain the preset
+        /// body. Every other widget edits a rule of the config — character AND Global tab.
+        /// The mode is explicit: keying it on unitId == null also caught the Global tab, whose
+        /// edits then landed in Presets/ as stray preset files and never in the config, and
+        /// whose onChanged (RefreshRuleList) turned any build-time PersistEdit into an endless
+        /// rebuild loop that hung the game (Wrath 1.35.1, Kingmaker report 2026-11-09).
         ///
         /// In preset mode we also fire onChanged so the parent PresetPanel can re-save and
-        /// surface any write error in its status line. In character-rule mode we skip onChanged
+        /// surface any write error in its status line. In config mode we skip onChanged
         /// to avoid rebuilding the rule list on every dropdown click.
         /// </summary>
         void PersistEdit() {
-            if (string.IsNullOrEmpty(unitId)) {
+            if (editsPreset) {
                 Engine.PresetRegistry.Save(rule);
                 onChanged?.Invoke();
             } else {
