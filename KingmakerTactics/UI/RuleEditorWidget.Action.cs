@@ -397,6 +397,16 @@ namespace KingmakerTactics.UI {
         }
 
         List<SpellDropdownProvider.SpellEntry> GetSpellEntries(ActionType actionType) {
+            long t = System.Diagnostics.Stopwatch.GetTimestamp();
+            try {
+                return GetSpellEntriesCore(actionType);
+            } finally {
+                UiTiming.SpellListTicks += System.Diagnostics.Stopwatch.GetTimestamp() - t;
+                UiTiming.SpellListCalls++;
+            }
+        }
+
+        List<SpellDropdownProvider.SpellEntry> GetSpellEntriesCore(ActionType actionType) {
             if (actionType == ActionType.AttackTarget || actionType == ActionType.DoNothing
                 || actionType == ActionType.Heal || actionType == ActionType.ThrowSplash
                 || actionType == ActionType.SwitchWeaponSet || actionType == ActionType.MoveToTarget)

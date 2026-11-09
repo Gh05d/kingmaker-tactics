@@ -45,8 +45,13 @@ namespace KingmakerTactics.UI {
                 onSelected?.Invoke(guid);
                 Destroy(overlay);
             };
-            controller.BuildUI(parts.Content);
-            controller.RenderList(); // initial render with empty query
+            var t = Logging.UiTiming.Start();
+            try {
+                controller.BuildUI(parts.Content);
+                controller.RenderList(); // initial render with empty query
+            } finally {
+                Logging.UiTiming.End("BuffPicker open", t);
+            }
 
             return overlay;
         }

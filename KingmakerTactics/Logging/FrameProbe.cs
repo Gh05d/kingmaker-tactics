@@ -37,6 +37,7 @@ namespace KingmakerTactics.Logging {
         /// <summary>Call once at the start of OnUpdate with Time.unscaledDeltaTime: closes
         /// the previous frame, whose duration that delta is.</summary>
         public static void BeginFrame(float lastFrameSeconds, bool loading) {
+            UiTiming.OnFrameClosed(lastFrameSeconds);
             int gc = GC.CollectionCount(0);
             bool gcRan = lastGcCount >= 0 && gc != lastGcCount;
             lastGcCount = gc;

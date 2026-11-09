@@ -104,6 +104,15 @@ namespace KingmakerTactics.UI {
         }
 
         public void Toggle() {
+            var t = UiTiming.Start();
+            try {
+                ToggleCore();
+            } finally {
+                UiTiming.End(isVisible ? "Panel open" : "Panel close", t);
+            }
+        }
+
+        void ToggleCore() {
             // Refresh once per open. The picked-up value drives every AddLabel /
             // CreateTMPInputField fontSize during this session — settings changes
             // made while the panel is visible take effect on the next Ctrl+T cycle.
@@ -498,6 +507,19 @@ namespace KingmakerTactics.UI {
         }
 
         void RefreshRuleList() {
+            var t = UiTiming.Start();
+            UiTiming.SpellListTicks = 0;
+            UiTiming.SpellListCalls = 0;
+            try {
+                RefreshRuleListCore();
+            } finally {
+                UiTiming.End("RefreshRuleList", t,
+                    $" (tab {selectedUnitId ?? "global"}, {(ruleListContent != null ? ruleListContent.childCount : 0)} rows, "
+                    + $"spell lists {UiTiming.Ms(UiTiming.SpellListTicks):F1} ms in {UiTiming.SpellListCalls} calls)");
+            }
+        }
+
+        void RefreshRuleListCore() {
             var anchor = anchorFrame == Time.frameCount ? anchorRule : null;
             if (ruleListContent == null) return;
             // Drop the gap a previous anchor added (ScrollAnchor) — it only has to hold

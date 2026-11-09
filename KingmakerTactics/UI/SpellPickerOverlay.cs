@@ -39,8 +39,13 @@ namespace KingmakerTactics.UI {
                 onSelected?.Invoke(entry);
                 Destroy(overlay);
             };
-            controller.BuildUI(parts.Content);
-            controller.RenderList();
+            var t = Logging.UiTiming.Start();
+            try {
+                controller.BuildUI(parts.Content);
+                controller.RenderList();
+            } finally {
+                Logging.UiTiming.End("SpellPicker open", t, $" ({controller.entries.Count} entries)");
+            }
 
             return overlay;
         }
