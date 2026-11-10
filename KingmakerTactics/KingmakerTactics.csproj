@@ -4,7 +4,7 @@
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
 		<AssemblyName>KingmakerTactics</AssemblyName>
-		<Version>1.0.4</Version>
+		<Version>1.0.5</Version>
 		<LangVersion>latest</LangVersion>
 		<RootNamespace>KingmakerTactics</RootNamespace>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
