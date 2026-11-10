@@ -274,18 +274,21 @@ namespace KingmakerTactics.Engine {
                 }
             }
 
-            if (heals.Count == 0 && fallbackScrolls.Count > 0) {
-                Log.Engine.Debug($"FindBestHeal for {owner.CharacterName}: no safe heal — falling back to {fallbackScrolls.Count} UMD-risky scroll(s)");
-                heals.AddRange(fallbackScrolls);
-            }
-
             // Kingmaker: UnitUseAbility.OnTick interrupts every tick when !Spell.CanTarget(Target)
             // (KM IL) — e.g. a quick-slot potion is self-only. Drop sources that cannot reach the
             // heal target instead of issuing a command the engine cancels on its first tick.
+            // Filtered BEFORE the UMD fallback (Wrath 57f6e14): risky scrolls still get a turn
+            // when every safe heal exists but cannot target this unit.
             var healTargetWrapper = new TargetWrapper(target ?? owner);
             int unreachable = heals.RemoveAll(h => !h.ability.CanTarget(healTargetWrapper));
             if (unreachable > 0)
                 Log.Engine.Trace($"FindBestHeal for {owner.CharacterName}: dropped {unreachable} source(s) that cannot target {(target ?? owner).CharacterName}");
+
+            if (heals.Count == 0 && fallbackScrolls.Count > 0) {
+                fallbackScrolls.RemoveAll(h => !h.ability.CanTarget(healTargetWrapper));
+                Log.Engine.Debug($"FindBestHeal for {owner.CharacterName}: no safe heal — falling back to {fallbackScrolls.Count} UMD-risky scroll(s)");
+                heals.AddRange(fallbackScrolls);
+            }
 
             Log.Engine.Debug($"FindBestHeal for {owner.CharacterName}: total inventory items={invTotal}, usable={invUsable}, healing={invHealing}, heals candidates total={heals.Count}");
             if (heals.Count == 0) return null;
