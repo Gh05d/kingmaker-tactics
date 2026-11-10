@@ -56,6 +56,12 @@ Führe alle Checks aus, bevor du irgendetwas änderst.
    ```
    Existiert bereits: Abbruch mit „Fehler: Tag vX.Y.Z existiert bereits. Version prüfen."
 
+6. **Wrath-Fixes übernommen?**
+   ```
+   ./tools/unported-wrath-fixes.sh
+   ```
+   Meldet es `missing: …`: Abbruch und dem User die Liste zeigen (portieren oder als Wrath-only in `SKIP` eintragen, siehe CLAUDE.md §Release Process).
+
 ---
 
 ## Schritt 3: Release Notes generieren

@@ -148,7 +148,9 @@ IL evidence, version history, and incident reports (Wrath era): `docs/wrath-api-
 
 ## Release Process
 
-→ parent §Release Process / §Nexus Mods. Remote is `origin`. `/release` (`.claude/commands/release.md`): bump → build → user-confirm gate → push → tag → GitHub Release → Nexus upload (auto). Mod-page: https://www.nexusmods.com/pathfinderkingmaker/mods/420 (file id 8075103; ids re-queryable with the manual workflow `nexus-file-ids.yml`).
+→ parent §Release Process / §Nexus Mods. Remote is `origin`.
+
+**Before every release: `./tools/unported-wrath-fixes.sh`** — lists Wrath Tactics fixes since the fork that are not in Kingmaker yet (three of four bugs found 2026-11-10 were already fixed in Wrath). Port with `git cherry-pick -x <hash>`; hand-adapted ports name `Wrath <short hash>` in the message, Wrath-only fixes go into the script's `SKIP`. Engine fixes need the Wrath claim checked against Kingmaker IL first (`../il-dump/ilm.py`); UI fixes usually only need the `KingmakerShim` names (`PartyAndPets()`, typed `ActivatableAbilities` instead of `RawFacts`). `/release` (`.claude/commands/release.md`): bump → build → user-confirm gate → push → tag → GitHub Release → Nexus upload (auto). Mod-page: https://www.nexusmods.com/pathfinderkingmaker/mods/420 (file id 8075103; ids re-queryable with the manual workflow `nexus-file-ids.yml`).
 
 ## Logs
 
